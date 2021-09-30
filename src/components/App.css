@@ -1,0 +1,30 @@
+form > div {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    margin: 10px 5px;
+}
+
+form > div > div {
+    -ms-flex: 1;
+    flex: 1;
+    max-width: 500px;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-flow: column nowrap;
+    flex-flow: column nowrap;
+    position: relative;
+}
+
+form > div > label {
+    margin-right: 10px;
+    min-width: 150px;
+    text-align: right;
+    padding: 6px 9px;
+}
+
+form > div > div > span {
+    border: none;
+    font-weight: bold;
+    color: #FF7F7F  ;
+}
