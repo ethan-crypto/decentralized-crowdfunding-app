@@ -2,8 +2,6 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import Feed from './Feed'
 import CreateProject from './CreateProject'
-import Spinner from './Spinner'
-import ProgressBar from "@ramonak/react-progress-bar";
 import { 
   crowdfunderSelector,
  } from '../store/selectors'

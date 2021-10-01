@@ -74,7 +74,7 @@ function crowdfunder(state = {}, action) {
 			if(index === -1) {
 				data = [...state.allProjects.data, action.project]
 			} else {
-				data = state.allProject .data
+				data = state.allProject.data
 			}
 
 			return {

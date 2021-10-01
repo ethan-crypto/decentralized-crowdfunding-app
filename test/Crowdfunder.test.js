@@ -78,6 +78,8 @@ contract('Crowdfunder', ([deployer, feeAccount, user1, user2, user3]) => {
 				event.fundGoal.toString().should.equal(daiToken(10).toString(), 'fundGoal is correct')
 				event.timeGoal.toString().should.equal(THIRTY_DAYS.toString(), 'timeGoal is correct')
 				event.timestamp.toString().length.should.be.at.least(1, 'timestamp is present')
+				event.totalFunds.toString().should.equal('0', 'totalFunds is correct')
+				event.supporterCount.toString().should.equal('0', 'supporterCount is correct')
 			})
 		})
 		describe('failure', () => {

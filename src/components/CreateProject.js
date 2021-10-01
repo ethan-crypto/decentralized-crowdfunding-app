@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { Field, reduxForm } from 'redux-form' 
 import { 
   crowdfunderSelector,
   projectMakingSelector,
@@ -10,7 +9,7 @@ import {
  } from '../store/selectors'
 import { makeProject } from '../store/interactions'
 import Spinner from './Spinner'
-import CreateProjectForm from '../forms/CreateProjectForm'
+import CreateProjectForm from './CreateProjectForm'
 
 
 class CreateProject extends Component {
@@ -23,11 +22,13 @@ class CreateProject extends Component {
           Create Project
         </div>
         <div className="card-body">
-          {this.props.showForm ? < CreateProjectForm 
-            dispatch={dispatch}
-            onSubmit= { 
-            (project) => { makeProject(dispatch, web3, project, buffer, account, crowdfunder) }
-             } />
+          {this.props.showForm ? 
+            <CreateProjectForm 
+              dispatch={dispatch}
+              onSubmit= { 
+              (project) => { makeProject(dispatch, web3, project, buffer, account, crowdfunder) }
+              } 
+             />
            : <Spinner /> }
         </div>
       </div>

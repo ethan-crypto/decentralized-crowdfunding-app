@@ -1,7 +1,7 @@
-import { get, reject, groupBy } from 'lodash'
+import { get, reject } from 'lodash'
 import { createSelector } from 'reselect'
 import moment from 'moment'
-import { futureTime, formatFunds, days } from '../helpers'
+import { futureTime, formatFunds } from '../helpers'
 require('moment-countdown')
 
 const account = state => get(state, 'web3.account')

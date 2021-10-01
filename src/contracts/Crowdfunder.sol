@@ -25,7 +25,9 @@ contract Crowdfunder {
 		address indexed creator,
 		uint256 fundGoal,
 		uint256 timeGoal,
-		uint256 timestamp	
+		uint256 timestamp,
+		uint256 totalFunds,
+		uint256 supporterCount	
 	);
 	event Cancel (
 		uint256 id,
@@ -94,7 +96,7 @@ contract Crowdfunder {
 		require(bytes(_imgHash).length > 0, 'Error, image hash must exist');
 		projectCount = projectCount.add(1);
 		projects[projectCount] = _Project(projectCount, _name, _description, _imgHash, msg.sender, _fundGoal, _timeGoal, block.timestamp, 0, 0);
-		emit ProjectMade(projectCount, _name, _description, _imgHash, msg.sender, _fundGoal, _timeGoal, block.timestamp);
+		emit ProjectMade(projectCount, _name, _description, _imgHash, msg.sender, _fundGoal, _timeGoal, block.timestamp, 0, 0);
 	}
 
 	function IsOpen(uint256 _timeGoal, uint256 _timestamp) internal view returns(bool) {
