@@ -33,9 +33,9 @@ function crowdfunder(state = {}, action) {
 		case 'ALL_PROJECTS_LOADED':
 			return { ...state, allProjects: { loaded: true, data: action.allProjects } }
 		case 'CONTRIBUTING_TO_PROJECT':
-			return { ...state, contribution: { ...state.contribution, amount: null, loading: true } }
+			return { ...state, contribution: { ...state.contribution, amount: null, id: null, loading: true } }
 		case 'CONTRIBUTION_AMOUNT_CHANGED':
-			return { ...state, contribution: { ...state.contribution, amount: action.amount } }
+			return { ...state, contribution: { ...state.contribution, amount: action.amount, id: action.id } }
 		case 'CONTRIBUTED_TO_PROJECT':
 			//Prevent duplicate contributions
 			index = state.allProjects.data.findIndex( 
@@ -101,9 +101,9 @@ function crowdfunder(state = {}, action) {
 		    }
 		case 'ALL_REFUNDS_LOADED':
 			return { ...state, allRefunds: { loaded: true, data: action.refunds } }
-		case 'TRANSFERING_PROJECT_FUNDS':
-			return { ...state, transferingProjectFunds: true }
-		case 'TRANSFERED_PROJECT_FUNDS':
+		case 'PROJECT_FUNDS_TRANSFERING':
+			return { ...state, projectFundsTransfering: true }
+		case 'PROJECT_FUNDS_TRANSFERED':
 			//Prevent duplicate succesful projects
 			index = state.successfulProjects.data.findIndex(project => project.id === action.project.id);
 
@@ -119,7 +119,29 @@ function crowdfunder(state = {}, action) {
 				  ...state.successfulProjects,
 				  data
 				},
-				transferingProjectFunds: false
+				projectFundsTransfering: false
+			}
+		case 'ALL_CONTRIBUTIONS_LOADED':
+			return {...state, allContributions: { loaded: true, data: action.contributions }}
+		case 'CONTRIBUTION_REFUNDING':
+			return {...state, contributionRefunding: true}
+		case 'CONTRIBUTION_REFUNDED':
+			//Prevent duplicate refunds
+			index = state.allRefunds.data.findIndex(refund => refund.id === action.refund.id);
+
+			if(index === -1) {
+				data = [...state.allRefunds.data, action.refund]
+			} else {
+				data = state.allRefunds.data
+			}
+
+			return {
+				...state,
+				allRefunds: {
+				  ...state.allRefunds,
+				  data
+				},
+				contributionRefunding: false
 			}
 		default:
 			return state

@@ -171,9 +171,6 @@ module.exports = async function(callback) {
 
 		await wait(20)
 
-		// User 2 gets their refund after user 1's project fails to meet funding goal in time
-		await crowdfunder.refund('6', { from: user2 })
-		console.log(`${user2} gets their contribution to ${user1} failed project refunded`)
 
 
 		/////////////////////////////////////////////////////////////
@@ -208,9 +205,9 @@ module.exports = async function(callback) {
 		await crowdfunder.cancelProject('8', { from: user1 })
 		console.log(`${user1} cancels their project ID: 8`)
 
-		// User 2 gets their refund after user 1's project fails to meet funding goal in time
-		await crowdfunder.refund('8', { from: user2 })
-		console.log(`${user2} gets their contribution to ${user1} cancelled project refunded`)
+		// User 2 gets their refund after project number 8 and 6 fails to meet funding goal in time
+		await crowdfunder.refund(['8','6'], { from: user2 })
+		console.log(`${user2} gets their contributions to ${user1} cancelled projects refunded`)
 
 		/////////////////////////////////////////////////////////////
 		// Seed a Fully Funded Open Project

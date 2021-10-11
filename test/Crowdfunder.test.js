@@ -196,92 +196,128 @@ contract('Crowdfunder', ([deployer, feeAccount, user1, user2, user3]) => {
 	describe('transfering collected funds', () => {
 		let result
 		beforeEach(async() => {
+			//approve crowdfunder to spend 30 of user2's dai
+			await dai.approve(crowdfunder.address, daiToken(30), {from: user2})
 			// user1 makes project
 			await crowdfunder.makeProject(name, description, imgHash, daiToken(10), THIRTY_DAYS, {from: user1})
-			await dai.approve(crowdfunder.address, daiToken(10), {from: user2})
+			// user1 makes another project
+			await crowdfunder.makeProject(name, description, imgHash, daiToken(20), THIRTY_DAYS, {from: user1})
 		})
 		describe('success', () => {
 			it('transfers total funds minus fee amount to creator and transfers fee amount to fee account', async() => {
 				let balance
-				// user2 fully funds project
+				let projectFundsTransfered
+				// user2 fully funds user1's first and second project
 				await crowdfunder.contribute('1', daiToken(10), {from: user2})
-				// increase the time past funding goal so transfer function is made available
+				await crowdfunder.contribute('2', daiToken(20), {from: user2})
+				// increase the time past funding goal
 				await time.increase(THIRTY_DAYS + 1)
-				// user1 calls transfer function on their project
-				result = await crowdfunder.transfer('1', {from: user1})
+				// user1 calls transfer function for both of their projects
+				result = await crowdfunder.transfer(['1','2'], {from: user1})
 				// check user 1 dai balance
 				balance = await dai.balanceOf(user1)
-				balance.toString().should.equal(daiToken(109).toString(), 'user1 dai balance is correct')
+				balance.toString().should.equal(daiToken(127).toString(), 'user1 dai balance is correct')
 				// check feeAccount dai balance
 				balance = await dai.balanceOf(feeAccount)
-				balance.toString().should.equal(daiToken(1).toString(), 'feeAccount dai balance is correct')
+				balance.toString().should.equal(daiToken(3).toString(), 'feeAccount dai balance is correct')
 				// check crowdfunder dai balance
 				balance = await dai.balanceOf(crowdfunder.address)
 				balance.toString().should.equal('0', 'crowdfunder dai balance is correct')
 				// updates fully funded projects
-				const projectFundsTransfered = await crowdfunder.projectFundsTransfered('1')
-				projectFundsTransfered.should.equal(true)				
+				projectFundsTransfered = await crowdfunder.projectFundsTransfered('1')
+				projectFundsTransfered.should.equal(true)
+				projectFundsTransfered = await crowdfunder.projectFundsTransfered('2')
+				projectFundsTransfered.should.equal(true)
+								
 			})
-			it('emits Transfer event', () => {
-				const log = result.logs[0]
+			it('emits Transfer events', () => {
+				let log, event 
+				// transfer event for user1's first project
+				log = result.logs[0]
 				log.event.should.eq('Transfer')
-				const event = log.args
+				event = log.args
 				event.id.toString().should.equal('1', 'id is correct')
 				event.creator.should.equal(user1, 'creator is correct')
-				event.fundAmount.toString().should.equal(daiToken(9).toString(), 'fund amount is correct')
+				event.transferAmount.toString().should.equal(daiToken(9).toString(), 'transfer amount is correct')
 				event.feeAmount.toString().should.equal(daiToken(1).toString(), 'fee amount is correct')
+				event.timestamp.toString().length.should.be.at.least(1, 'timestamp is present')
+				// transfer event for user1's second project
+				log = result.logs[1]
+				log.event.should.eq('Transfer')
+				event = log.args
+				event.id.toString().should.equal('2', 'id is correct')
+				event.creator.should.equal(user1, 'creator is correct')
+				event.transferAmount.toString().should.equal(daiToken(18).toString(), 'fund amount is correct')
+				event.feeAmount.toString().should.equal(daiToken(2).toString(), 'transfer amount is correct')
 				event.timestamp.toString().length.should.be.at.least(1, 'timestamp is present')
 			})
 		})
 		describe('failure', () => {
-			it('rejects when the project is still open', () => {
-				// user2 fully funds project
-				crowdfunder.contribute('1', daiToken(10), {from: user2}).should.be.fulfilled
-				// user1 calls transfer function on their project before waiting until the project has ended
+			it('rejects empty ids array as an argument', async() => {
+				// user2 fully funds first and second project
+				await crowdfunder.contribute('1', daiToken(10), {from: user2})
+				await crowdfunder.contribute('2', daiToken(20), {from: user2})
+				// increase the time past funding goal
+				await time.increase(THIRTY_DAYS + 1)
 				expectRevert(
-					crowdfunder.transfer('1', {from: user1}),
+					crowdfunder.transfer([], {from: user1}),
+					'Error, ids array cannot be empty'
+				);
+			})
+			it('rejects when atleast one of the projects is still open', async () => {
+				// user2 fully funds first and second project
+				await crowdfunder.contribute('1', daiToken(10), {from: user2})
+				await crowdfunder.contribute('2', daiToken(20), {from: user2})
+				// user1 calls transfer function on their projects before waiting until the projects have ended
+				expectRevert(
+					crowdfunder.transfer(['1','2'], {from: user1}),
 					'Error, project still open'
 				);
 			})
-			it('rejects when the project did not reach funding goal', async() => {
-				// increase the time past funding goal so transfer function is made available
+			it('rejects when atleast one of the projects did not reach their funding goal', async() => {
+				// user2 fully funds first project but not second
+				await crowdfunder.contribute('1', daiToken(10), {from: user2})
+				// increase the time past funding goal
 				await time.increase(THIRTY_DAYS + 1)
 				expectRevert(
-					crowdfunder.transfer('1', {from: user1}),
+					crowdfunder.transfer(['1','2'], {from: user1}),
 					'Error, project did not meet funding goal in time'
 				);
 			})
 			it('rejects unauthorized transfers', async() => {
-				// user2 fully funds project
+				// user2 fully funds first and second project
 				await crowdfunder.contribute('1', daiToken(10), {from: user2})
-				// increase the time past funding goal so transfer function is made available
+				await crowdfunder.contribute('2', daiToken(20), {from: user2})
+				// increase the time past funding goal
 				await time.increase(THIRTY_DAYS + 1)
 				expectRevert(
-					crowdfunder.transfer('1', {from: user2}),
+					crowdfunder.transfer(['1','2'], {from: user2}),
 					'Error, only creator can transfer collected project funds'
 				);
 			})
 			it('rejects when project funds have already been transfered', async() => {
-				// user2 fully funds project
+				// user2 fully funds first and second project
 				await crowdfunder.contribute('1', daiToken(10), {from: user2})
-				// increase the time past funding goal so transfer function is made available
+				await crowdfunder.contribute('2', daiToken(20), {from: user2})
+				// increase the time past funding goal
 				await time.increase(THIRTY_DAYS + 1)
-				// user1 successfully transfers funds
-				await crowdfunder.transfer('1', {from: user1})
+				// user1 successfully transfers funds from both first and second project
+				await crowdfunder.transfer(['1','2'], {from: user1})
 				expectRevert(
-					crowdfunder.transfer('1', {from: user1}),
+					crowdfunder.transfer(['1','2'], {from: user1}),
 					'Error, collected project funds already transfered'
 				);
 			})	
-			it('rejects when project is canceled', async() => {
-				// user2 fully funds project
+			it('rejects when at least one project has been canceled', async() => {
+				// user2 fully funds first and second project
 				await crowdfunder.contribute('1', daiToken(10), {from: user2})
-				// user1 cancels their project
-				await crowdfunder.cancelProject('1', {from: user1})
-				// increase the time past funding goal so transfer function is made available
+				await crowdfunder.contribute('2', daiToken(20), {from: user2})
+				// user1 cancels their second project
+				await crowdfunder.cancelProject('2', {from: user1})
+				// increase the time past funding goal
 				await time.increase(THIRTY_DAYS + 1)
 				expectRevert(
-					crowdfunder.transfer('1', {from: user1}),
+					crowdfunder.transfer(['1','2'], {from: user1}),
 					'Error, project is canceled'
 				);
 			})	
@@ -290,64 +326,102 @@ contract('Crowdfunder', ([deployer, feeAccount, user1, user2, user3]) => {
 	describe('refunds', () => {
 		
 		beforeEach(async() => {
-			// user1 makes project
+			//user1 makes project
 			await crowdfunder.makeProject(name, description, imgHash, daiToken(10), THIRTY_DAYS , {from: user1})
-			await dai.approve(crowdfunder.address, daiToken(7), {from: user2})
-			// user2 contributes funds to project
+			//user1 makes another project
+			await crowdfunder.makeProject(name, description, imgHash, daiToken(20), THIRTY_DAYS , {from: user1})
+			// user2 contributes funds to user1s first project
+			await dai.approve(crowdfunder.address, daiToken(21), {from: user2})
 			await crowdfunder.contribute('1', daiToken(5), {from: user2})
-			await dai.approve(crowdfunder.address, daiToken(3), {from: user3})
-			// user3 contributes funds to project 
+			// user2 contributes funds to user1s second project
+			await crowdfunder.contribute('2', daiToken(10), {from: user2})
+			// user3 contributes funds to user1s first project 
+			await dai.approve(crowdfunder.address, daiToken(9), {from: user3})
 			await crowdfunder.contribute('1', daiToken(3), {from: user3})
+			// user3 contributes funds to user1s second project 
+			await crowdfunder.contribute('2', daiToken(6), {from: user3})
 		})
 		describe('success', () => {
+			let supporterFunds
+			let result
 			it('refunds supporter funds after project fails to meet funding deadline', async() => {
 				await time.increase(THIRTY_DAYS + 1)
 				// user 2 calls refund function
-				await crowdfunder.refund('1', {from: user2})
-				// sets user2 supporter funds back to 0
-				const supporterFunds = await crowdfunder.supporterFunds('1', user2)
+				await crowdfunder.refund(['1','2'], {from: user2})
+				// sets user2 supporter funds for user1's first project back to 0
+				supporterFunds = await crowdfunder.supporterFunds('1', user2)
 				supporterFunds.toString().should.equal('0', 'user2 supporter funds is correct')
+				// sets user2 supporter funds for user1's second project back to 0
+				supporterFunds = await crowdfunder.supporterFunds('2', user2)
+				supporterFunds.toString().should.equal('0', 'user2 supporter funds is correct')
+				
 				
 			})
 			it('refunds supporter funds after project is canceled', async() => {
-				await time.increase(THIRTY_DAYS + 1)
-				// user 1 cancels project
+				// user 1 cancels their first and second project
 				await crowdfunder.cancelProject('1', {from: user1})
+				await crowdfunder.cancelProject('2', {from: user1})
 				// user 3 calls refund function
-				await crowdfunder.refund('1', {from: user3})
-				const supporterFunds = await crowdfunder.supporterFunds('1', user3)
-				supporterFunds.toString().should.equal('0', 'user3 supporter funds is correct')				
+				result = await crowdfunder.refund(['1','2'], {from: user3})
+				// sets user3 supporter funds for user1's first project back to 0
+				supporterFunds = await crowdfunder.supporterFunds('1', user3)
+				supporterFunds.toString().should.equal('0', 'user3 supporter funds is correct')	
+				// sets user3 supporter funds for user1's second project back to 0
+				supporterFunds = await crowdfunder.supporterFunds('2', user3)
+				supporterFunds.toString().should.equal('0', 'user3 supporter funds is correct')	
 			})
 			it('emits a refund event', async() => {
-				let result
-				await crowdfunder.cancelProject('1', {from: user1})
-				result = await crowdfunder.refund('1', {from: user3})
-				const log = result.logs[0]
+				let log, event
+				//refund event for user3's contribution to project number 1
+				log = result.logs[0]
 				log.event.should.eq('Refund')
-				const event = log.args
+				event = log.args
 				event.id.toString().should.equal('1', 'id is correct')
 				event.supporter.should.equal(user3, 'supporter is correct')
 				event.refundAmount.toString().should.equal(daiToken(3).toString(), 'refundAmount is correct')
 				event.timestamp.toString().length.should.be.at.least(1, 'timestamp is present')
+				//refund event for user3's contribution to project number 2
+				log = result.logs[1]
+				log.event.should.eq('Refund')
+				event = log.args
+				event.id.toString().should.equal('2', 'id is correct')
+				event.supporter.should.equal(user3, 'supporter is correct')
+				event.refundAmount.toString().should.equal(daiToken(6).toString(), 'refundAmount is correct')
+				event.timestamp.toString().length.should.be.at.least(1, 'timestamp is present')
 			})
 		})
 		describe('failure', () => {
+			it('rejects empty ids array as an argument', async() => {
+				// user 2 adds enough funds for user1's first project to reach funding goal
+				await crowdfunder.contribute('1', daiToken(4), {from: user2})
+				// user 2 adds enough funds for user1's second project to reach funding goal
+				await crowdfunder.contribute('2', daiToken(2), {from: user2})
+				// increase the time past funding goal
+				await time.increase(THIRTY_DAYS + 1)
+				expectRevert(
+					crowdfunder.transfer([], {from: user1}),
+					'Error, ids array cannot be empty'
+				);
+				
+			})
 			it('rejects refunds when project is still open', () => {
 				// calls refund function before deadline passes
 				expectRevert(
-					crowdfunder.refund('1', {from: user2}), 
-					'Error, no refunds unless project has been canceled or does not meet funding goal in time'
+					crowdfunder.refund(['1','2'], {from: user2}), 
+					'Error, no refunds unless project has been canceled or did not meet funding goal'
 				);
 			})
-			it('rejects refunds when project did not reach funding goal by deadline', async() => {
-				// user 2 adds enough funds for project to reach funding goal
+			it('rejects refunds when project reached funding goal by deadline', async() => {
+				// user 2 adds enough funds for user1's first project to reach funding goal
 				await crowdfunder.contribute('1', daiToken(2), {from: user2})
+				// user 2 adds enough funds for user1's second project to reach funding goal
+				await crowdfunder.contribute('2', daiToken(4), {from: user2})
 				// increase time past funding deadline
 				await time.increase(THIRTY_DAYS + 1)
 				// calls refund function after project meets funding goal in time
 				expectRevert(
-					crowdfunder.refund('1', {from: user2}),
-					'Error, no refunds unless project has been canceled or does not meet funding goal in time'
+					crowdfunder.refund(['1','2'], {from: user2}),
+					'Error, no refunds unless project has been canceled or did not meet funding goal'
 				);
 			})
 		})

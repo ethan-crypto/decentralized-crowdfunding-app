@@ -1,12 +1,14 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
+import Spinner from './Spinner'
 import { 
   crowdfunderSelector,
   daiSelector,
   openProjectsSelector,
   accountSelector,
   contributionSelector,
-  web3Selector
+  web3Selector,
+  projectsLoadedSelector
 } from '../store/selectors'
 import { 
   contributeToProject,
@@ -15,12 +17,14 @@ import {
   contributionAmountChanged
 } from '../store/actions'
 
-class OpenProjects extends Component {
+
+
+class Discover extends Component {
   render() {
     const {
       dispatch,
       web3,
-      contributionAmount,
+      contribution,
       account,
       crowdfunder,
       dai,
@@ -28,11 +32,15 @@ class OpenProjects extends Component {
       renderProgressBar,
       renderFundingInfo,
       openProjects
-    } = this.props 
-
+    } = this.props
     return(
-      <div>
-        { openProjects.map((openProject, key) => {
+      <div className="card bg-dark text-white">
+        <div className="card-header">
+          Open Projects
+        </div>
+        <div className="card-body">
+        { this.props.showOpenProjects ? 
+          openProjects.map((openProject, key) => {
           return(
             <div className ="card mb-4" key={key} >
               <div className="card-header">
@@ -47,19 +55,30 @@ class OpenProjects extends Component {
                       {renderFundingInfo(openProject)}
                       <tr>
                         <td className= "small float-right">TIME LEFT: </td>
-                        <td className= "small float-left mt-1 text-muted">{openProject.timeLeft} to go</td>
+                        <td className= "small float-left mt-1 text-muted">
+                          {openProject.timeLeft} to go
+                        </td>
                       </tr>
                     </tbody>
                   </table>
-                  <form className="row" onSubmit={(event) => {
-                    event.preventDefault()
-                    contributeToProject(dispatch, web3, contributionAmount, account, openProject.id, crowdfunder, dai)
-                  }}>
+                  <form className="row" 
+                    onSubmit={(event) => {
+                      event.preventDefault()
+                      contributeToProject(dispatch, web3, contribution.amount, account, openProject.id, crowdfunder, dai)
+                    }}
+                    onBlur={(event) => {
+                      event.preventDefault()
+                      if (!event.currentTarget.contains(event.relatedTarget)) {
+                        document.getElementById(key.toString()).value = ''
+                    }}}
+                    >
                     <div className="col-12 col-sm pr-sm-2">
                       <input
                         type="text"
                         placeholder="Dai Amount"
-                        onChange={(e) => dispatch( contributionAmountChanged(e.target.value))}
+                        id = {key.toString()}
+                        value = { contribution.id !== openProject.id ? '' : contribution.amount}
+                        onChange={(e) => dispatch( contributionAmountChanged(e.target.value, openProject.id))}
                         className="form-control form-control-sm bg-dark text-white"
                         required />
                     </div>
@@ -71,7 +90,8 @@ class OpenProjects extends Component {
               </ul>
             </div>
           )})
-        } 
+          : <Spinner />}
+        </div> 
       </div>
     )  
   }
@@ -79,14 +99,16 @@ class OpenProjects extends Component {
 
 function mapStateToProps(state) {
   const contribution = contributionSelector(state)
+  const projectsLoaded = projectsLoadedSelector(state)
   return {
     web3: web3Selector(state),
     crowdfunder: crowdfunderSelector(state),
     dai: daiSelector(state),
     account: accountSelector(state),
     openProjects: openProjectsSelector(state),
-    contributionAmount: contribution.amount
+    contribution,
+    showOpenProjects: projectsLoaded && !contribution.loading
   }
 }
 
-export default connect(mapStateToProps)(OpenProjects)
+export default connect(mapStateToProps)(Discover)

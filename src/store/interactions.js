@@ -13,8 +13,11 @@ import {
 	projectCancelling,
 	projectCancelled,
 	allRefundsLoaded,
-	transferingProjectFunds,
-	transferedProjectFunds
+	projectFundsTransfering,
+	projectFundsTransfered,
+	allContributionsLoaded,
+	contributionRefunding,
+	contributionRefunded
 } from './actions'
 import Web3 from 'web3'
 import Dai from '../abis/Dai.json'
@@ -99,12 +102,21 @@ export const loadAllProjects = async(crowdfunder, dispatch) => {
 export const loadAllRefunds = async(crowdfunder, dispatch) => {
 	// Fetch refunds with the "Refund" event stream
 	const refundStream = await crowdfunder.getPastEvents('Refund', { fromBlock: 0, toBlock: 'latest' })
-	console.log(refundStream)
 	// Format refunds
 	const allRefunds = refundStream.map((event) => event.returnValues)
 	// Add refunds to the redux store
 	dispatch(allRefundsLoaded(allRefunds))
 }
+
+export const loadAllContributions = async(crowdfunder, dispatch) => {
+	// Fetch contributions with the "Contribution" event stream
+	const contributionStream = await crowdfunder.getPastEvents('Contribution', { fromBlock: 0, toBlock: 'latest' })
+	// Format contributions
+	const allContributions = contributionStream.map((event) => event.returnValues)
+	// Add refunds to the redux store
+	dispatch(allContributionsLoaded(allContributions))
+}
+
 
 
 export const subscribeToEvents = async (crowdfunder, dispatch) => {
@@ -119,9 +131,11 @@ export const subscribeToEvents = async (crowdfunder, dispatch) => {
 		dispatch(projectCancelled(event.returnValues))
 	})
 	crowdfunder.events.Transfer({}, (error, event) => {
-		dispatch(transferedProjectFunds(event.returnValues))
+		dispatch(projectFundsTransfered(event.returnValues))
 	})
-
+	crowdfunder.events.Refund({}, (error, event) => {
+		dispatch(contributionRefunded(event.returnValues))
+	})
 }
 
 
@@ -171,10 +185,21 @@ export const cancelProject = (dispatch, web3, account, id, crowdfunder) => {
   })
 }
 
-export const transferProjectFunds = (dispatch, web3, account, id, crowdfunder) => {
+export const transferAllProjectFunds = (dispatch, web3, account, ids, crowdfunder) => {
 	crowdfunder.methods.transfer(id).send({ from: account })
   .on('transactionHash', (hash) => {
-    dispatch(transferingProjectFunds())
+    dispatch(projectFundsTransfering())
+  })
+  .on('error', (error) => {
+    console.log(error)
+    window.alert('There was an error!')
+  })
+}
+
+export const refundContributions = (dispatch, web3, account, id, crowdfunder) => {
+	crowdfunder.methods.refund(id).send({ from: account })
+  .on('transactionHash', (hash) => {
+    dispatch(contributionRefunding())
   })
   .on('error', (error) => {
     console.log(error)

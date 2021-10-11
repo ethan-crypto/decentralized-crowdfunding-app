@@ -111,15 +111,37 @@ export function allRefundsLoaded(refunds) {
 	}
 }
 
-export function transferingProjectFunds() {
+export function projectFundsTransfering() {
 	return {
-		type: 'TRANSFERING_PROJECT_FUNDS',
+		type: 'PROJECT_FUNDS_TRANSFERING',
 	}
 }
 
-export function transferedProjectFunds(project) {
+export function projectFundsTransfered(project) {
 	return {
-		type: 'TRANSFERED_PROJECT_FUNDS',
+		type: 'PROJECT_FUNDS_TRANSFERED',
 		project
 	}
 }
+
+export function allContributionsLoaded(contributions) {
+	return {
+		type: 'ALL_CONTRIBUTIONS_LOADED',
+		contributions
+	}
+}
+
+export function contributionRefunding() {
+	return {
+		type: 'CONTRIBUTION_REFUNDING',
+	}
+}
+
+export function contributionRefunded(refund) {
+	return {
+		type: 'CONTRIBUTION_REFUNDED',
+		refund
+	}
+}
+
+

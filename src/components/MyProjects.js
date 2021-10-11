@@ -1,15 +1,21 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
+import { Tabs, Tab } from 'react-bootstrap'
+import Spinner from './Spinner'
 import { 
   crowdfunderSelector,
   daiSelector,
   accountSelector,
   web3Selector,
-  myProjectsSelector
+  myProjectsSelector,
+  projectsLoadedSelector,
+  allRefundsLoadedSelector, 
+  projectFundsTransferingSelector,
+  projectCancellingSelector
 } from '../store/selectors'
 import { 
   cancelProject,
-  transferProjectFunds
+  transferAllProjectFunds
 } from '../store/interactions'
 
 const renderRefundInfo = myProject => {
@@ -25,152 +31,180 @@ const renderRefundInfo = myProject => {
   )
 }
 
-const renderMyCancelledProject = (myProject, props) => {
+const renderMyCancelledProject = (myProject, props, key) => {
   return (
-    <>
-      <table className="table table-dark table-sm small">
-        <tbody>
-          {props.renderFundingInfo(myProject)}
-          <tr>
-            <td className= "small float-right">CANCELLED: </td>
-            <td className= "small float-left mt-1 text-muted">{myProject.cancelledDate}</td>
-          </tr>
-          {myProject.formattedTotalFunds > 0 ? renderRefundInfo(myProject) : null}
-        </tbody>
-      </table>
-    </>
+    <div className ="card mb-4" key={key} >
+      <ul id="imageList" className="list-group list-group-flush">
+        {props.renderContent(myProject)}
+        <li key={key} className="list-group-item py-2">
+          {props.renderProgressBar(myProject, myProject.barColor)}
+          <table className="table table-dark table-sm small">
+            <tbody>
+              {props.renderFundingInfo(myProject)}
+              <tr>
+                <td className= "small float-right">CANCELLED: </td>
+                <td className= "small float-left mt-1 text-muted">{myProject.cancelledDate}</td>
+              </tr>
+              {myProject.formattedTotalFunds > 0 ? renderRefundInfo(myProject) : null}
+            </tbody>
+          </table>
+        </li>
+      </ul>
+    </div>
   )
 }
 
-const renderMyOpenProject = (myProject, props) => {
+const renderMyOpenProject = (myProject, props, key) => {
   
   return (
-    <>
-      <table className="table table-dark table-sm small">
-        <tbody>
-          {props.renderFundingInfo(myProject)}
-          <tr>
-            <td className= "small float-right">TIME LEFT: </td>
-            <td className= "small float-left mt-1 text-muted">{myProject.timeLeft} to go</td>
-          </tr>
-        </tbody>
-      </table>
-      <button
-        className="btn btn-link btn-sm float-right pt-0"
-        name={myProject.id}
-        onClick={(event) => {
-          console.log(event.target.name)
-          cancelProject(props.dispatch, props.web3, props.account, event.target.name, props.crowdfunder)
-        }}
-      >
-        Cancel Project
-      </button>
-    </>
+    <div className ="card mb-4" key={key} >
+      <ul id="imageList" className="list-group list-group-flush">
+        {props.renderContent(myProject)}
+        <li key={key} className="list-group-item py-2">
+          {props.renderProgressBar(myProject, myProject.barColor)}
+          <table className="table table-dark table-sm small">
+            <tbody>
+              {props.renderFundingInfo(myProject)}
+              <tr>
+                <td className= "small float-right">TIME LEFT: </td>
+                <td className= "small float-left mt-1 text-muted">{myProject.timeLeft} to go</td>
+              </tr>
+            </tbody>
+          </table>
+          <button
+            className="btn btn-link btn-sm float-right pt-0"
+            name={myProject.id}
+            onClick={(event) => {
+              console.log(event.target.name)
+              cancelProject(props.dispatch, props.web3, props.account, event.target.name, props.crowdfunder)
+            }}
+          >
+            Cancel Project
+          </button>  
+        </li>
+      </ul>
+    </div>
   )
 }
 
-const renderMyFailedProject = (myProject, props) => {
+const renderMyFailedProject = (myProject, props, key) => {
   return (
-    <>
-      <table className="table table-dark table-sm small">
-        <tbody>
-          {props.renderFundingInfo(myProject)}
-          <tr>
-            <td className= "small float-right">ENDED: </td>
-            <td className= "small float-left mt-1 text-muted">{myProject.endDate}</td>
-          </tr>
-          {myProject.formattedTotalFunds > 0 ? renderRefundInfo(myProject) : null}
-        </tbody>
-      </table>
-    </>
+    <div className ="card mb-4" key={key} >
+      <ul id="imageList" className="list-group list-group-flush">
+        {props.renderContent(myProject)}
+        <li key={key} className="list-group-item py-2">
+          {props.renderProgressBar(myProject, myProject.barColor)}
+          <table className="table table-dark table-sm small">
+            <tbody>
+              {props.renderFundingInfo(myProject)}
+              <tr>
+                <td className= "small float-right">ENDED: </td>
+                <td className= "small float-left mt-1 text-muted">{myProject.endDate}</td>
+              </tr>
+              {myProject.formattedTotalFunds > 0 ? renderRefundInfo(myProject) : null}
+            </tbody>
+          </table>
+        </li>
+      </ul>
+    </div>
   )
 }
 
-const renderMySuccessfulProject = (myProject, props) => {
+const renderMySuccessfulProject = (myProject, props, key) => {
   return(
-    <>
-      <table className="table table-dark table-sm small">
-        <tbody>
-          {props.renderFundingInfo(myProject)}
-          <tr>
-            <td className= "small float-right">ENDED: </td>
-            <td className= "small float-left mt-1 text-muted">{myProject.endDate}</td>
-          </tr>
-          <tr>
-            <td className= "small float-right">TRANSFERED: </td>
-            <td className= "small float-left mt-1 text-muted">{myProject.transferedDate}</td>
-          </tr>
-        </tbody>
-      </table>
-    </>
+    <div className ="card mb-4" key={key} >
+      <ul id="imageList" className="list-group list-group-flush">
+        {props.renderContent(myProject)}
+        <li key={key} className="list-group-item py-2">
+          {props.renderProgressBar(myProject, myProject.barColor)}
+          <table className="table table-dark table-sm small">
+            <tbody>
+              {props.renderFundingInfo(myProject)}
+              <tr>
+                <td className= "small float-right">ENDED: </td>
+                <td className= "small float-left mt-1 text-muted">{myProject.endDate}</td>
+              </tr>
+              <tr>
+                <td className= "small float-right">TRANSFERED: </td>
+                <td className= "small float-left mt-1 text-muted">{myProject.transferedDate}</td>
+              </tr>
+            </tbody>
+          </table>
+        </li>
+      </ul>
+    </div>
   )
   
 }
 
-const renderMyPendingTransferProject = (myProject, props) => {
+const renderMyPendingTransferProject = (myProject, props, key) => {
   return(
-    <>
-      <table className="table table-dark table-sm small">
-        <tbody>
-          {props.renderFundingInfo(myProject)}
-          <tr>
-            <td className= "small float-right">ENDED: </td>
-            <td className= "small float-left mt-1 text-muted">{myProject.endDate}</td>
-          </tr>
-        </tbody>
-      </table>
-      <button
-          className="btn btn-link btn-sm float-right pt-0"
-          name={myProject.id}
-          onClick={(event) => {
-            console.log(event.target.name)
-            transferProjectFunds(props.dispatch, props.web3, props.account, event.target.name, props.crowdfunder)
-          }}
-        >
-          Transfer
-      </button>
-    </>
+    <div className ="card mb-4" key={key} >
+      <ul id="imageList" className="list-group list-group-flush">
+        {props.renderContent(myProject)}
+        <li key={key} className="list-group-item py-2">
+          {props.renderProgressBar(myProject, myProject.barColor)}
+          <table className="table table-dark table-sm small">
+            <tbody>
+              {props.renderFundingInfo(myProject)}
+              <tr>
+                <td className= "small float-right">ENDED: </td>
+                <td className= "small float-left mt-1 text-muted">{myProject.endDate}</td>
+              </tr>
+            </tbody>
+          </table>
+          <button
+              className="btn btn-link btn-sm float-right pt-0"
+              name={myProject.id}
+              onClick={(event) => {
+                console.log(event.target.name)
+                transferAllProjectFunds(props.dispatch, props.web3, props.account, event.target.name, props.crowdfunder)
+              }}
+            >
+              Transfer
+          </button>
+        </li>
+      </ul>
+    </div>
   )
   
 }
 
-const renderMyProjectState = (myProject, props) => {
-  switch(myProject.status){
-    case "CANCELLED":
-      return (renderMyCancelledProject(myProject, props))
-    case "OPEN":
-      return (renderMyOpenProject(myProject, props))
-    case "FAILED":
-      return (renderMyFailedProject(myProject, props))
-    case "SUCCEEDED":
-      return (renderMySuccessfulProject(myProject, props))
-    case "PENDING_TRANSFER":
-      return (renderMyPendingTransferProject(myProject, props))
-    default:
-      return null
-  }
+const showMyProjects = props => {
+  const {
+    myProjects
+  } = props
+  return (
+    <Tabs defaultActiveKey="pendingTransferProjects" className="bg-dark text-white">
+      <Tab eventKey="pendingTransferProjects" title="Pending Transfer" className="bg-dark">
+        { myProjects.pendingTransferProjects.map((myProject, key) => renderMyPendingTransferProject(myProject, props, key) )}  
+      </Tab>
+      <Tab eventKey="openProjects" title="Open" className="bg-dark">
+        { myProjects.openProjects.map((myProject, key) => renderMyOpenProject(myProject, props, key) )}   
+      </Tab>
+      <Tab eventKey="cancelledProjects" title="Cancelled" className="bg-dark">
+        { myProjects.cancelledProjects.map((myProject, key) => renderMyCancelledProject(myProject, props, key) )}  
+      </Tab>
+      <Tab eventKey="failedProjects" title="Failed" className="bg-dark">
+        { myProjects.failedProjects.map((myProject, key) => renderMyFailedProject(myProject, props, key) )}  
+      </Tab>
+      <Tab eventKey="successfulProjects" title="Successful" className="bg-dark">
+        { myProjects.successfulProjects.map((myProject, key) => renderMySuccessfulProject(myProject, props, key) )}  
+      </Tab>
+    </Tabs>
+  )
 }
 
 class MyProjects extends Component {
   render() {
     return (
-      <div>
-        { this.props.myProjects.map((myProject, key) => {
-          return(
-            <div className ="card mb-4" key={key} >
-              <div className="card-header" style={{backgroundColor: myProject.backgroundColor}}>
-                <small className="text-muted">Status: {myProject.status}</small>
-              </div>
-              <ul id="imageList" className="list-group list-group-flush">
-                {this.props.renderContent(myProject)}
-                <li key={key} className="list-group-item py-2">
-                  {this.props.renderProgressBar(myProject, myProject.barColor)}
-                  {renderMyProjectState(myProject, this.props)}  
-                </li>
-              </ul>
-            </div>
-          )})
-        }
+      <div className="card bg-dark text-white">
+        <div className="card-header">
+          My Projects
+        </div>
+        <div className="card-body">
+        { this.props.showMyProjects ? showMyProjects(this.props) : <Spinner />}
+        </div>
       </div>
     )
   }
@@ -179,12 +213,17 @@ class MyProjects extends Component {
 
 
 function mapStateToProps(state) {
+  const projectsLoaded = projectsLoadedSelector(state)
+  const allRefundsLoaded = allRefundsLoadedSelector(state)
+  const projectFundsTransfering = projectFundsTransferingSelector(state)
+  const projectCancelling = projectCancellingSelector(state)
   return {
     web3: web3Selector(state),
     crowdfunder: crowdfunderSelector(state),
     dai: daiSelector(state),
     account: accountSelector(state),
     myProjects: myProjectsSelector(state),
+    showMyProjects: projectsLoaded && allRefundsLoaded && !projectFundsTransfering && !projectCancelling
   }
 }
 

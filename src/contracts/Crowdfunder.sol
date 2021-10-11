@@ -47,7 +47,7 @@ contract Crowdfunder {
 	event Transfer (
 		uint256 id,
 		address indexed creator,
-		uint256 fundAmount,
+		uint256 transferAmount,
 		uint256 feeAmount,
 		uint256 timestamp
 	);
@@ -79,8 +79,8 @@ contract Crowdfunder {
 		require(_id > 0 && _id <= projectCount, 'Error, wrong id');
 		_;
 	}
-	modifier onlyNoncancelled (uint256 _id) {
-		require(!projectCancelled[_id], 'Error, project is canceled');
+	modifier onlyNonEmptyArrays (uint256[] calldata _ids) {
+		require(_ids.length > 0, 'Error, ids array cannot be empty');
 		_;
 	}
 
@@ -111,7 +111,7 @@ contract Crowdfunder {
 		emit Cancel(_project.id, msg.sender, _project.fundGoal, _project.timeGoal, block.timestamp);
 	}
 
-	function contribute(uint256 _id, uint256 _amount) onlyValidIds(_id) onlyNoncancelled(_id) external {
+	function contribute(uint256 _id, uint256 _amount) onlyValidIds(_id) external {
 		require(!projectCancelled[_id], 'Error, project is canceled');
 		_Project memory _project = projects[_id];
 		require(msg.sender != _project.creator, 'Error, creators are not allowed to add funds to their own projects');
@@ -126,29 +126,39 @@ contract Crowdfunder {
 		emit Contribution (_id, msg.sender, _project.supporterCount, _project.totalFunds, _amount, block.timestamp);	
 	}
 
-	function transfer(uint256 _id) onlyNoncancelled(_id) external {
-		require(!projectFundsTransfered[_id], 'Error, collected project funds already transfered');
-		_Project storage _project = projects[_id];
-		require(address(_project.creator) == msg.sender, 'Error, only creator can transfer collected project funds');
-		require(!IsOpen(_project.timeGoal, _project.timestamp), 'Error, project still open');
-		require(_project.totalFunds >= _project.fundGoal, 'Error, project did not meet funding goal in time');
-		uint256 _totalFunds = _project.totalFunds;
-		uint256 _feeAmount = _totalFunds.mul(feePercent).div(100);
-		require(dai.transfer(_project.creator, _totalFunds.sub(_feeAmount)));
-		require(dai.transfer(feeAccount, _feeAmount));
-		projectFundsTransfered[_id] = true;
-		emit Transfer(_id, _project.creator, _totalFunds.sub(_feeAmount), _feeAmount, block.timestamp);
+	function transfer(uint256[] calldata _ids) onlyNonEmptyArrays(_ids) external {
+		uint256 _totalFunds;
+		uint256 _feeAmount;
+		for(uint256 i = 0; i < _ids.length; i++) {
+			require(!projectCancelled[_ids[i]], 'Error, project is canceled');
+			require(!projectFundsTransfered[_ids[i]], 'Error, collected project funds already transfered');
+			_Project storage _project = projects[_ids[i]];
+			require(address(_project.creator) == msg.sender, 'Error, only creator can transfer collected project funds');
+			require(!IsOpen(_project.timeGoal, _project.timestamp), 'Error, project still open');
+			require(_project.totalFunds >= _project.fundGoal, 'Error, project did not meet funding goal in time');
+			_totalFunds = _project.totalFunds;
+			_feeAmount = _project.totalFunds.mul(feePercent).div(100);
+			require(dai.transfer(msg.sender, _totalFunds.sub(_feeAmount)));
+			require(dai.transfer(feeAccount, _feeAmount));
+			projectFundsTransfered[_ids[i]] = true;
+			emit Transfer(_ids[i], msg.sender, _totalFunds.sub(_feeAmount), _feeAmount, block.timestamp);
+		}
 	}
 
-	function refund(uint256 _id) external {
-		_Project storage _project = projects[_id];
-		bool underFunded = _project.totalFunds < _project.fundGoal;
-		bool _failed = !IsOpen(_project.timeGoal, _project.timestamp) && underFunded;
-		require(_failed || projectCancelled[_id], 'Error, no refunds unless project has been canceled or does not meet funding goal in time');
-		uint256 _supporterFunds = supporterFunds[_id][msg.sender];
-		require(dai.transfer(msg.sender, _supporterFunds));
-		delete supporterFunds[_id][msg.sender];
-		emit Refund(_id, msg.sender, _supporterFunds, block.timestamp);
+	function refund(uint256[] calldata _ids) onlyNonEmptyArrays(_ids) external {
+		bool _underFunded;
+		bool _failed;
+		uint256 _supporterFunds;
+		for(uint256 i = 0; i < _ids.length; i++) {
+			_Project storage _project = projects[_ids[i]];
+			_underFunded = _project.totalFunds < _project.fundGoal;
+			_failed = !IsOpen(_project.timeGoal, _project.timestamp) && _underFunded;
+			require(_failed || projectCancelled[_ids[i]], 'Error, no refunds unless project has been canceled or did not meet funding goal');
+			_supporterFunds = supporterFunds[_ids[i]][msg.sender];
+			require(dai.transfer(msg.sender, _supporterFunds));
+			delete supporterFunds[_ids[i]][msg.sender];
+			emit Refund(_ids[i], msg.sender, _supporterFunds, block.timestamp);
+		}	
 	}
 }
 
