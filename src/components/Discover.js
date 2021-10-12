@@ -30,7 +30,7 @@ class Discover extends Component {
       dai,
       renderContent,
       renderProgressBar,
-      renderFundingInfo,
+      renderDataTable,
       openProjects
     } = this.props
     return(
@@ -50,17 +50,7 @@ class Discover extends Component {
                 {renderContent(openProject)}
                 <li key={key} className="list-group-item py-2">
                   {renderProgressBar(openProject, "#0075ff")}
-                  <table className="table table-dark table-sm small">
-                    <tbody>
-                      {renderFundingInfo(openProject)}
-                      <tr>
-                        <td className= "small float-right">TIME LEFT: </td>
-                        <td className= "small float-left mt-1 text-muted">
-                          {openProject.timeLeft} to go
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+                  {renderDataTable(openProject)}
                   <form className="row" 
                     onSubmit={(event) => {
                       event.preventDefault()

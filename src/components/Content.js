@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import CreateProject from './CreateProject'
-import OpenProjects from './OpenProjects'
+import Discover from './Discover'
 import MyProjects from './MyProjects'
 import ProgressBar from "@ramonak/react-progress-bar";
 import { 
@@ -13,6 +13,23 @@ import {
   subscribeToEvents,
   loadAllContributions
 } from '../store/interactions'
+
+const renderPopover = project => {
+
+}
+
+const renderRefundInfo = project => {
+  return (
+    <tr>
+      <td className= "small float-right">REFUNDS: </td>
+      <td className= "small float-left mt-1 text-muted">
+        {project.totalRefundAmount > 0 ? `$${project.totalRefundAmount} refunded across ${project.numberOfRefunds} supporter${ project.numberOfRefunds !== 1 ? 's' : ''}
+        , ${Math.round(project.totalRefundAmount*100/project.formattedTotalFunds)}% refunded`:
+        'None' } 
+      </td>
+    </tr>
+  )
+}
 
 const renderContent = project => {
   return(
@@ -37,7 +54,7 @@ const renderProgressBar = (project, color) => {
 }
 
 
-const renderFundingInfo = project => {
+const renderDataTable = project => {
   return(
     <>
       <tr>
@@ -51,6 +68,11 @@ const renderFundingInfo = project => {
           'None' }
         </td>
       </tr>
+      <tr>
+        <td className= "small float-right">{project.status !== "OPEN" ? "ENDED: " : "TIME LEFT: "}</td>
+        <td className= "small float-left mt-1 text-muted">{project.status !== "OPEN" ? project.endDate : project.timeLeft}</td>
+      </tr>
+      {project.formattedTotalFunds > 0 && (project.status === "FAILED" || project.status === "CANCELLED") ? renderRefundInfo(myProject) : null}
     </>
   )
 }
@@ -71,15 +93,15 @@ class Content extends Component {
   render() {
     return (
       <div className="content">
-        <OpenProjects
+        <Discover
           renderContent ={renderContent}
           renderProgressBar ={renderProgressBar}
-          renderFundingInfo ={renderFundingInfo}
+          renderDataTable ={renderDataTable}
         />
         <MyProjects 
           renderContent ={renderContent}
           renderProgressBar ={renderProgressBar}
-          renderFundingInfo ={renderFundingInfo}
+          renderDataTable ={renderDataTable}
         />
         <div className="vertical-split">
           
