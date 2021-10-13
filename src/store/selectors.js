@@ -1,7 +1,7 @@
 import { get, reject, groupBy, without } from 'lodash'
 import { createSelector } from 'reselect'
 import moment from 'moment'
-import { futureTime, formatFunds } from '../helpers'
+import { futureTime, formatFunds, GREEN, RED, BLUE, ORANGE, GREY, DARK_GREY } from '../helpers'
 require('moment-countdown')
 
 const account = state => get(state, 'web3.account')
@@ -97,7 +97,7 @@ const formatProject = (project, successful, cancelled, allRefunds) => {
 			cancelledDate: moment.unix(cancelledProject.timestamp).format('M/D/YYYY h:mm:ss a'),
 			backgroundColor: "#FFC77F",
 			barColor: "#F88A03",
-			refunds: r.refunds
+			refunds: r.refunds,
 			totalRefundAmount: r.totalRefundAmount, 
 			numberOfRefunds: r.numberOfRefunds
 		}
@@ -120,7 +120,7 @@ const formatProject = (project, successful, cancelled, allRefunds) => {
 			projectTypeClass: RED,
 			backgroundColor: "#FF7F7F",
 			barColor: "#FA0303",
-			refunds: r.refunds
+			refunds: r.refunds, 
 			totalRefundAmount: r.totalRefundAmount, 
 			numberOfRefunds: r.numberOfRefunds
 		}
@@ -130,8 +130,8 @@ const formatProject = (project, successful, cancelled, allRefunds) => {
 			...project,
 			status: "SUCCEEDED",
 			projectTypeClass: GREEN,
-			feeAmount: formatFunds(successfulProject.transferAmount)
-			transferAmount: formatFunds(successfulProject.transferAmount)
+			feeAmount: formatFunds(successfulProject.transferAmount),
+			transferAmount: formatFunds(successfulProject.transferAmount), 
 			transferedDate: moment.unix(successfulProject.timestamp).format('M/D/YYYY h:mm:ss a'),
 			backgroundColor: "#82FF7F",
 			barColor: "#06FA01"
@@ -151,7 +151,7 @@ const formatProject = (project, successful, cancelled, allRefunds) => {
 		formattedTotalFunds: formatFunds(project.totalFunds),
 		formattedFundGoal: formatFunds(project.fundGoal),
 		timeGoalInDays: (+project.timeGoal/86400),
-		formattedTimestamp: moment.unix(project.timestamp).format('M/D/YYYY h:mm:ss a')
+		formattedTimestamp: moment.unix(project.timestamp).format('M/D/YYYY h:mm:ss a'),
 		endDate: moment.unix(+project.timeGoal + +project.timestamp).format('M/D/YYYY h:mm:ss a')
 	})
 }
@@ -178,7 +178,6 @@ const formattedProjectsLoaded = state =>
 export const formattedProjectsLoadedSelector = createSelector(projectsLoaded, loaded => loaded)
 
 // Discover
-
 export const discoverProjectsSelector = createSelector(
 	formattedProjects.openProjects,
 	account,
@@ -193,7 +192,6 @@ const contribution = state => get(state, 'crowdfunder.contribution', {})
 export const contributionSelector = createSelector(contribution, c => c)
 
 // Create Project
-
 const projectMaking = state => get(state, 'crowdfunder.projectMaking', false)
 export const projectMakingSelector = createSelector(projectMaking, pm => pm)
 
@@ -202,10 +200,25 @@ export const bufferSelector = createSelector(buffer, b => b)
 
 //My Projects
 
+const feePercent = state => get(state, 'crowdfunder.feePercent', null)
+export const feePercentSelector = createSelector(feePercent, fp => fp)
+
 export const myPendingTransferProjectsSelector = createSelector(
 	formattedProjects.pendingTransferProjects,
 	account,
-	(projects, account) => projects.filter((p) => p.creator === account)
+	(projects, account) => {
+		// filter projects by user
+		projects = projects.filter((p) => p.creator === account)
+		// Add up all the totalFunds from each pending transfer project 
+		let totalPendingTransferFunds 
+		projects.forEach((project) => {
+			totalPendingTransferFunds += project.totalFunds
+		})  
+		return({
+			...projects,
+			totalPendingTransferFunds
+		})
+	}
 )
 
 export const myOpenProjectsSelector = createSelector(
@@ -222,13 +235,12 @@ export const myClosedProjectsSelector = createSelector(
 		projects = without(projects, projects.openProjects)
 		projects = without(projects, projects.pendingTransfer)
 		// filter projects created by user
-		projects.filter((p) => p.creator === account)
+		projects = projects.filter((p) => p.creator === account)
 		return projects
 	}
 )
 
 //My Contributions
-
 const formattedContributions = state => 
 	allContributions(state).map((contribution) => 
 		formatContribution(contribution, formattedProjects(state)[contribution.id - 1])
@@ -250,7 +262,7 @@ const formattedContributionsLoaded = state => formattedProjectsLoaded(state) && 
 
 export const formattedContributionsLoadedSelector = createSelector(formattedContributionsLoaded, (loaded) => loaded)
 
-export const myPendingContributionRefundsSelector = createSelector (formattedContributionsLoaded
+export const myPendingContributionRefundsSelector = createSelector(
 	myFormattedContributions,
 	formattedProjects,
 	account,

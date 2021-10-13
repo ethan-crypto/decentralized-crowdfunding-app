@@ -53,7 +53,6 @@ const renderProgressBar = (project, color) => {
   )
 }
 
-
 const renderDataTable = project => {
   return(
     <>
@@ -72,7 +71,7 @@ const renderDataTable = project => {
         <td className= "small float-right">{project.status !== "OPEN" ? "ENDED: " : "TIME LEFT: "}</td>
         <td className= "small float-left mt-1 text-muted">{project.status !== "OPEN" ? project.endDate : project.timeLeft}</td>
       </tr>
-      {project.formattedTotalFunds > 0 && (project.status === "FAILED" || project.status === "CANCELLED") ? renderRefundInfo(myProject) : null}
+      {project.formattedTotalFunds > 0 && (project.status === "FAILED" || project.status === "CANCELLED") ? renderRefundInfo(project) : null}
     </>
   )
 }

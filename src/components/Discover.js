@@ -4,11 +4,11 @@ import Spinner from './Spinner'
 import { 
   crowdfunderSelector,
   daiSelector,
-  openProjectsSelector,
+  discoverProjectsSelector,
   accountSelector,
   contributionSelector,
   web3Selector,
-  projectsLoadedSelector
+  formattedProjectsLoadedSelector
 } from '../store/selectors'
 import { 
   contributeToProject,
@@ -31,7 +31,7 @@ class Discover extends Component {
       renderContent,
       renderProgressBar,
       renderDataTable,
-      openProjects
+      discoverProjects
     } = this.props
     return(
       <div className="card bg-dark text-white">
@@ -40,21 +40,21 @@ class Discover extends Component {
         </div>
         <div className="card-body">
         { this.props.showOpenProjects ? 
-          openProjects.map((openProject, key) => {
+          discoverProjects.map((project, key) => {
           return(
             <div className ="card mb-4" key={key} >
               <div className="card-header">
-                <small className="text-muted">{openProject.creator}</small>
+                <small className="text-muted">{project.creator}</small>
               </div>
               <ul id="imageList" className="list-group list-group-flush">
-                {renderContent(openProject)}
+                {renderContent(project)}
                 <li key={key} className="list-group-item py-2">
-                  {renderProgressBar(openProject, "#0075ff")}
-                  {renderDataTable(openProject)}
+                  {renderProgressBar(project, "#0075ff")}
+                  {renderDataTable(project)}
                   <form className="row" 
                     onSubmit={(event) => {
                       event.preventDefault()
-                      contributeToProject(dispatch, web3, contribution.amount, account, openProject.id, crowdfunder, dai)
+                      contributeToProject(dispatch, web3, contribution.amount, account, project.id, crowdfunder, dai)
                     }}
                     onBlur={(event) => {
                       event.preventDefault()
@@ -67,8 +67,8 @@ class Discover extends Component {
                         type="text"
                         placeholder="Dai Amount"
                         id = {key.toString()}
-                        value = { contribution.id !== openProject.id ? '' : contribution.amount}
-                        onChange={(e) => dispatch( contributionAmountChanged(e.target.value, openProject.id))}
+                        value = { contribution.id !== project.id ? '' : contribution.amount}
+                        onChange={(e) => dispatch( contributionAmountChanged(e.target.value, project.id))}
                         className="form-control form-control-sm bg-dark text-white"
                         required />
                     </div>
@@ -89,15 +89,15 @@ class Discover extends Component {
 
 function mapStateToProps(state) {
   const contribution = contributionSelector(state)
-  const projectsLoaded = projectsLoadedSelector(state)
+  const formattedProjectsLoaded = formattedProjectsLoadedSelector(state)
   return {
     web3: web3Selector(state),
     crowdfunder: crowdfunderSelector(state),
     dai: daiSelector(state),
     account: accountSelector(state),
-    openProjects: openProjectsSelector(state),
+    discoverProjects: discoverProjectsSelector(state),
     contribution,
-    showOpenProjects: projectsLoaded && !contribution.loading
+    showOpenProjects: formattedProjectsLoaded && !contribution.loading
   }
 }
 

@@ -10,7 +10,7 @@ contract Crowdfunder {
 
 	using SafeMath for uint;
 	IERC20 dai; 
-	address public feeAccount; // the account that receives exchange fees
+	address public feeAccount; // the account that receives transfer fees
 	uint256 public feePercent; // the fee percentage
 	uint256 public projectCount;
 	mapping(uint256 => _Project) public projects;

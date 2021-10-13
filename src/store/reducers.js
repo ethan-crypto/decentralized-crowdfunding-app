@@ -143,6 +143,8 @@ function crowdfunder(state = {}, action) {
 				},
 				contributionRefunding: false
 			}
+		case 'FEE_PERCENT_LOADED':
+			return {...state, feePercent: action.feePercent}
 		default:
 			return state
 	}

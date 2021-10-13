@@ -144,4 +144,13 @@ export function contributionRefunded(refund) {
 	}
 }
 
+export function feePercentLoaded(percent) {
+	return {
+		type: 'FEE_PERCENT_LOADED',
+		percent
+	}
+}
+
+
+
 

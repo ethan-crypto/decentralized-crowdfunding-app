@@ -12,11 +12,13 @@ import {
   myClosedProjectsSelector,
   formattedProjectsLoadedSelector,
   projectFundsTransferingSelector,
-  projectCancellingSelector
+  projectCancellingSelector,
+  feePercentSelector
 } from '../store/selectors'
 import { 
   cancelProject,
-  transferAllProjectFunds
+  transferAllProjectFunds,
+  loadFeePercent
 } from '../store/interactions'
 
 
@@ -51,22 +53,58 @@ const renderMyProject = (myProject, props, key) => {
 }
 
 const showMyProjects = props => {
+  const {
+    myPendingTransferProjects,
+    myOpenProjects,
+    myCancelledProjects,
+    showTransferTotal, 
+    showTransferInfo,
+    feePercent
+  } = props
   return (
     <Tabs defaultActiveKey="pendingTransferProjects" className="bg-dark text-white">
       <Tab eventKey="pendingTransferProjects" title="Pending Transfer" className="bg-dark">
-        { props.myPendingTransferProjects.map((project, key) => renderMyProject(project, props, key) )}  
+        <button 
+          className="btn btn-primary btn-sm btn-block"
+          onClick={(e) => {
+            transferAllProjectFunds(props.dispatch, props.web3, props.account, props.myPendingTransferProjects, props.crowdfunder)
+          }}
+        >
+          Transfer All
+        </button>
+        { showTransferInfo ? 
+          <>
+            <div>
+              <small>Fee: ${myPendingTransferProjects.totalPendingTransferFunds * feePercent/100} </small>
+            </div>
+            <div>
+              <small>Total: ${myPendingTransferProjects.totalPendingTransferFunds * (1 - feePercent/100)} </small>
+            </div>
+          </>
+          : null 
+        }
+        { myPendingTransferProjects.map((project, key) => renderMyProject(project, props, key) )}  
       </Tab>
       <Tab eventKey="openProjects" title="Open" className="bg-dark">
-        { props.myOpenProjects.map((project, key) => renderMyProject(project, props, key) )}   
+        { myOpenProjects.map((project, key) => renderMyProject(project, props, key) )}   
       </Tab>
       <Tab eventKey="closedProjects" title="Closed" className="bg-dark">
-        { props.myCancelledProjects.map((project, key) => renderMyProject(project, props, key) )}  
+        { myCancelledProjects.map((project, key) => renderMyProject(project, props, key) )}  
       </Tab>
     </Tabs>
   )
 }
 
 class MyProjects extends Component {
+  componentDidMount(){
+    this.loadBlockchainData()
+  }
+
+  async loadBlockchainData() {
+    const { dispatch, web3, crowdfunder, account } = this.props
+    await loadFeePercent(dispatch, web3, crowdfunder, account)
+  }
+
   render() {
     return (
       <div className="card bg-dark text-white">
@@ -84,18 +122,22 @@ class MyProjects extends Component {
 
 
 function mapStateToProps(state) {
-  const formattedProjectsLoaded = projectsLoadedSelector(state)
+  const formattedProjectsLoaded = formattedProjectsLoadedSelector(state)
   const projectFundsTransfering = projectFundsTransferingSelector(state)
   const projectCancelling = projectCancellingSelector(state)
+  const myPendingTransferProjects = myPendingTransferProjectsSelector(state)
+  const feePercent = feePercentSelector(state)
   return {
     web3: web3Selector(state),
     crowdfunder: crowdfunderSelector(state),
     dai: daiSelector(state),
     account: accountSelector(state),
-    myPendingTransferProjects: myPendingTransferProjectsSelector(state),
+    myPendingTransferProjects,
     myOpenProjects: myOpenProjectsSelector(state),
     myClosedProjects: myClosedProjectsSelector(state),
-    showMyProjects: formattedProjectsLoaded && !projectFundsTransfering && !projectCancelling
+    showMyProjects: formattedProjectsLoaded && !projectFundsTransfering && !projectCancelling,
+    feePercent,
+    showTransferInfo: myPendingTransferProjects.length > 0 && feePercentSelector
   }
 }
 

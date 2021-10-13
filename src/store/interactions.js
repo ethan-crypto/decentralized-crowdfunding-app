@@ -17,7 +17,8 @@ import {
 	projectFundsTransfered,
 	allContributionsLoaded,
 	contributionRefunding,
-	contributionRefunded
+	contributionRefunded,
+	feePercentLoaded
 } from './actions'
 import Web3 from 'web3'
 import Dai from '../abis/Dai.json'
@@ -185,8 +186,9 @@ export const cancelProject = (dispatch, web3, account, id, crowdfunder) => {
   })
 }
 
-export const transferAllProjectFunds = (dispatch, web3, account, ids, crowdfunder) => {
-	crowdfunder.methods.transfer(id).send({ from: account })
+export const transferAllProjectFunds = (dispatch, web3, account, projects, crowdfunder) => {
+	const ids = projects.map((project) => project.id)
+	crowdfunder.methods.transfer(ids).send({ from: account })
   .on('transactionHash', (hash) => {
     dispatch(projectFundsTransfering())
   })
@@ -196,8 +198,14 @@ export const transferAllProjectFunds = (dispatch, web3, account, ids, crowdfunde
   })
 }
 
-export const refundContributions = (dispatch, web3, account, id, crowdfunder) => {
-	crowdfunder.methods.refund(id).send({ from: account })
+export const loadFeePercent = async(dispatch, web3, crowdfunder, account) => {
+	const feePercent = await crowdfunder.methods.projectCount().call()
+	dispatch(feePercentLoaded(feePercent))
+}
+
+export const refundContributions = (dispatch, web3, account, projects, crowdfunder) => {
+	const ids = projects.map((project) => project.id)
+	crowdfunder.methods.refund(ids).send({ from: account })
   .on('transactionHash', (hash) => {
     dispatch(contributionRefunding())
   })
