@@ -70,15 +70,16 @@ const formattedProjects = state => {
 	const allRefunds = formattedRefunds(state)
 	projects = projects.map((project) => formatProject(project, successful, cancelled, allRefunds)) 
 	// Group all projects by "status"
-	projects = groupBy(projects, 'status')
+	const groupedProjects = groupBy(projects, 'status')
 	// Fetch open, cancelled, failed, sucessful and pending transfer projects
 	projects = {
 		...projects,
-		openProjects: get(projects, 'OPEN', []),
-		cancelledProjects: get(projects, 'CANCELLED', []),
-		failedProjects: get(projects, 'FAILED', []),
-		successfulProjects: get(projects, 'SUCCEEDED', []),
-		pendingTransferProjects: get(projects, 'PENDING_TRANSFER', [])
+		allProjects: projects,
+		openProjects: get(groupedProjects, 'OPEN', []),
+		cancelledProjects: get(groupedProjects, 'CANCELLED', []),
+		failedProjects: get(groupedProjects, 'FAILED', []),
+		successfulProjects: get(groupedProjects, 'SUCCEEDED', []),
+		pendingTransferProjects: get(groupedProjects, 'PENDING_TRANSFER', [])
 	}
 	return projects
 }
@@ -89,17 +90,12 @@ const formatProject = (project, successful, cancelled, allRefunds) => {
 	// Determine if project funds have successfully transfered to creator
 	const successfulProject = successful.find((p) => project.id === p.id)
 	if(cancelledProject !== undefined) {
-		const r = refundInfo(project, allRefunds)
 		project = { 
 			...project,
 			status: "CANCELLED",
-			projectTypeClass: ORANGE,
+			projectTypeClass: GREY,
 			cancelledDate: moment.unix(cancelledProject.timestamp).format('M/D/YYYY h:mm:ss a'),
-			backgroundColor: "#FFC77F",
-			barColor: "#F88A03",
-			refunds: r.refunds,
-			totalRefundAmount: r.totalRefundAmount, 
-			numberOfRefunds: r.numberOfRefunds
+			refunds: refundInfo(project, allRefunds)
 		}
 	}
 	else if(+project.timeGoal + +project.timestamp > futureTime(0)) {
@@ -107,22 +103,15 @@ const formatProject = (project, successful, cancelled, allRefunds) => {
 			...project,
 			status: "OPEN",
 			projectTypeClass: BLUE,
-			backgroundColor: "#74B3FC",
-			barColor: "#0075FF",
 			timeLeft: moment.unix(+project.timeGoal + +project.timestamp).countdown().toString(),
 		}
 	}
 	else if (project.totalFunds < project.fundGoal) {
-		const r = refundInfo(project, allRefunds)
 		project = {
 			...project,
 			status: "FAILED",
 			projectTypeClass: RED,
-			backgroundColor: "#FF7F7F",
-			barColor: "#FA0303",
-			refunds: r.refunds, 
-			totalRefundAmount: r.totalRefundAmount, 
-			numberOfRefunds: r.numberOfRefunds
+			refunds: refundInfo(project, allRefunds)
 		}
 	}
 	else if (successfulProject !== undefined) {
@@ -133,17 +122,13 @@ const formatProject = (project, successful, cancelled, allRefunds) => {
 			feeAmount: formatFunds(successfulProject.transferAmount),
 			transferAmount: formatFunds(successfulProject.transferAmount), 
 			transferedDate: moment.unix(successfulProject.timestamp).format('M/D/YYYY h:mm:ss a'),
-			backgroundColor: "#82FF7F",
-			barColor: "#06FA01"
 		}
 	}
 	else {
 		project = {
 			...project,
 			status: "PENDING_TRANSFER",
-			projectTypeClass: YELLOW, 
-			backgroundColor: "#FBFC74",
-			barColor: "#FAFC01"
+			projectTypeClass: ORANGE, 
 		}
 	}
 	return({
@@ -152,22 +137,25 @@ const formatProject = (project, successful, cancelled, allRefunds) => {
 		formattedFundGoal: formatFunds(project.fundGoal),
 		timeGoalInDays: (+project.timeGoal/86400),
 		formattedTimestamp: moment.unix(project.timestamp).format('M/D/YYYY h:mm:ss a'),
+		percentFunded: Math.round(project.totalFunds*100/project.fundGoal),
 		endDate: moment.unix(+project.timeGoal + +project.timestamp).format('M/D/YYYY h:mm:ss a')
 	})
 }
 
-const refundInfo = (project, allRefunds) => {
+const refundInfo = (project, refunds) => {
 	// Filter by refunds that applied to this particular project
-	const refunds = allRefunds.filter((r) => project.id === r.id)
+	refunds = refunds.filter((r) => project.id === r.id)
 	// Add up all the refunds to aquire refund total
 	let totalRefundAmount = 0
 	for(var i = 0 ; i < refunds.length ; i++) {
 		totalRefundAmount += refunds[i].refundAmount
 	}
 	return({
-		refunds,
+		...refunds,
+		data: refunds,
 		totalRefundAmount: formatFunds(totalRefundAmount),
-		numberOfRefunds: refunds.length
+		numberOfRefunds: refunds.length,
+		percentRefunded: Math.round(totalRefundAmount*100/project.totalFunds)
 	})
 
 }
@@ -175,13 +163,15 @@ const refundInfo = (project, allRefunds) => {
 const formattedProjectsLoaded = state => 
 	allProjectsLoaded(state) && cancelledProjectsLoaded(state) && successfulProjectsLoaded(state) && allRefundsLoaded(state)
 
-export const formattedProjectsLoadedSelector = createSelector(projectsLoaded, loaded => loaded)
+export const formattedProjectsLoadedSelector = createSelector(formattedProjectsLoaded, loaded => loaded)
 
 // Discover
 export const discoverProjectsSelector = createSelector(
-	formattedProjects.openProjects,
+	formattedProjects,
 	account,
 	(projects, account) => {
+		//fetch openProjects
+		projects = projects.openProjects
 		// filter openProjects by those whos creator is not the user
 		projects.filter((p) => p.creator !== account)
 		return projects
@@ -199,32 +189,43 @@ const buffer = state => get(state, 'crowdfunder.buffer', null)
 export const bufferSelector = createSelector(buffer, b => b)
 
 //My Projects
-
 const feePercent = state => get(state, 'crowdfunder.feePercent', null)
 export const feePercentSelector = createSelector(feePercent, fp => fp)
 
-export const myPendingTransferProjectsSelector = createSelector(
-	formattedProjects.pendingTransferProjects,
+export const myPendingTransfersSelector = createSelector(
+	formattedProjects,
 	account,
-	(projects, account) => {
+	feePercent,
+	(projects, account, feePercent) => {
+		// fetch pendingTransferProjects
+		console.log(projects.pendingTransferProjects)
+		projects = projects.pendingTransferProjects
 		// filter projects by user
 		projects = projects.filter((p) => p.creator === account)
 		// Add up all the totalFunds from each pending transfer project 
-		let totalPendingTransferFunds 
+		let  totalCollectedProjectFunds
 		projects.forEach((project) => {
-			totalPendingTransferFunds += project.totalFunds
+			totalCollectedProjectFunds += project.totalFunds
 		})  
 		return({
 			...projects,
-			totalPendingTransferFunds
+			projects,
+			totalPendingTransferFunds: totalCollectedProjectFunds * (1 - feePercent/100),
+			totalPendingTransferFee: totalCollectedProjectFunds * (feePercent/100)
 		})
 	}
 )
 
 export const myOpenProjectsSelector = createSelector(
-	formattedProjects.openProjects,
+	formattedProjects,
 	account,
-	(projects, account) => projects.filter((p) => p.creator === account)
+	(projects, account) => {
+		//fetch openProjects
+		projects = projects.openProjects
+		//filter by projects that are created by the user
+		projects = projects.filter((p) => p.creator === account)
+		return projects
+	}
 )
 
 export const myClosedProjectsSelector = createSelector(
@@ -232,8 +233,11 @@ export const myClosedProjectsSelector = createSelector(
 	account,
 	(projects, account) => {
 		// take out all projects that are either open or pending transfer
-		projects = without(projects, projects.openProjects)
-		projects = without(projects, projects.pendingTransfer)
+		projects = reject(projects.allProjects, (project) => {
+			const open = projects.openProjects.some((p) => p.id === project.id)
+			const pendingTransfer = projects.pendingTransferProjects.some((p) => p.id === project.id)
+			return(open || pendingTransfer)
+		})
 		// filter projects created by user
 		projects = projects.filter((p) => p.creator === account)
 		return projects
@@ -243,7 +247,7 @@ export const myClosedProjectsSelector = createSelector(
 //My Contributions
 const formattedContributions = state => 
 	allContributions(state).map((contribution) => 
-		formatContribution(contribution, formattedProjects(state)[contribution.id - 1])
+		formatContribution(contribution, formattedProjects(state).allProjects[contribution.id - 1])
 	)
 
 const formatContribution = (contribution, project) => {
@@ -264,13 +268,12 @@ export const formattedContributionsLoadedSelector = createSelector(formattedCont
 
 export const myPendingContributionRefundsSelector = createSelector(
 	myFormattedContributions,
-	formattedProjects,
 	account,
-	(contributions, projects, account) => {
+	(contributions, account) => {
 		// fetch contributions to projects that have either cancelled or failed
 		contributions = contributions.filter((c) => c.project.status === 'CANCELLED' || c.project.status === 'FAILED')
 		// fetch contributions that haven't been refunded by user
-		contributions = contributions.filter((c) => c.project.refunds.some((r) => get(r, 'supporter', null) !== account))
+		contributions = contributions.filter((c) => c.project.refunds.data.some((r) => get(r, 'supporter', null) !== account))
 		return(contributions)
 	}
 )
@@ -286,7 +289,7 @@ export const myReleasedContributionsSelector = createSelector (
 		// fetch contributions to projects that are not open or pending transfer
 		contributions = contributions.filter((c) => c.project.status !== 'OPEN' || c.project.status !== 'PENDING_TRANSFER')
 		// fetch contributions that have been refunded by user
-		contributions = contributions.filter((c) => get(c, 'project.refunds', []).some((r) => get(r, 'supporter', null) === account))
+		contributions = contributions.filter((c) => get(c, 'project.refunds.data', []).some((r) => get(r, 'supporter', null) === account))
 		return(contributions)
 	}
 )
@@ -294,8 +297,12 @@ export const myReleasedContributionsSelector = createSelector (
 //Transactions
 
 export const transfersSelector = createSelector (
-	formattedProjects.successfulProjects,
-	(successfulProjects) => successfulProjects
+	formattedProjects,
+	(projects) => {
+		//fetch successful projects
+		projects = projects.successfulProjects
+		return projects
+	}
 )
 
 export const contributionsSelector = createSelector (
@@ -311,7 +318,7 @@ export const refundsSelector = createSelector (
 		refunds.map((refund) => {
 			return({
 				...refund,
-				project: projects[refund.id - 1]
+				project: projects.allProjects[refund.id - 1]
 			})
 		})
 	}

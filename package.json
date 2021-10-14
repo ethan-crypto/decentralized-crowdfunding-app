@@ -9,8 +9,6 @@
     "node": "8.11.1"
   },
   "dependencies": {
-    "--save @ramonak/react-progress-bar": "3.2.1",
-    "@ramonak/react-progress-bar": "^3.2.1",
     "@truffle/hdwallet-provider": "1.4.1",
     "babel-polyfill": "6.26.0",
     "babel-preset-env": "1.7.0",

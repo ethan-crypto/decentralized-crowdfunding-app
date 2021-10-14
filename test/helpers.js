@@ -1,9 +1,4 @@
-export const GREEN = 'success'
-export const RED = 'danger'
-export const ORANGE = 'warning'
-export const GREY = 'secondary'
-export const BLUE = 'primary'
-export const DARK_GREY = 'dark'
+
 
 export const daiToken = (n) => {
   return new web3.utils.BN(

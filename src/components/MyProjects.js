@@ -7,7 +7,7 @@ import {
   daiSelector,
   accountSelector,
   web3Selector,
-  myPendingTransferProjectsSelector,
+  myPendingTransfersSelector,
   myOpenProjectsSelector,
   myClosedProjectsSelector,
   formattedProjectsLoadedSelector,
@@ -21,6 +21,26 @@ import {
   loadFeePercent
 } from '../store/interactions'
 
+const showTransferInfo = (pendingTransfers, props) => {
+  return(
+    <>
+      <button 
+        className="btn btn-primary btn-sm btn-block"
+        onClick={(e) => {
+          transferAllProjectFunds(props.dispatch, props.web3, props.account, props.myPendingTransferProjects, props.crowdfunder)
+        }}
+      >
+        Transfer All
+      </button>
+      <div>
+        <small>Fee: ${pendingTransfers.totalPendingTransferFee} </small>
+      </div>
+      <div>
+        <small>Total: ${pendingTransfers.totalPendingTransferFunds} </small>
+      </div>
+    </>
+  )
+}
 
 const renderCancelButton = (id, props) => {
   return(
@@ -56,7 +76,7 @@ const showMyProjects = props => {
   const {
     myPendingTransferProjects,
     myOpenProjects,
-    myCancelledProjects,
+    myClosedProjects,
     showTransferTotal, 
     showTransferInfo,
     feePercent
@@ -64,32 +84,14 @@ const showMyProjects = props => {
   return (
     <Tabs defaultActiveKey="pendingTransferProjects" className="bg-dark text-white">
       <Tab eventKey="pendingTransferProjects" title="Pending Transfer" className="bg-dark">
-        <button 
-          className="btn btn-primary btn-sm btn-block"
-          onClick={(e) => {
-            transferAllProjectFunds(props.dispatch, props.web3, props.account, props.myPendingTransferProjects, props.crowdfunder)
-          }}
-        >
-          Transfer All
-        </button>
-        { showTransferInfo ? 
-          <>
-            <div>
-              <small>Fee: ${myPendingTransferProjects.totalPendingTransferFunds * feePercent/100} </small>
-            </div>
-            <div>
-              <small>Total: ${myPendingTransferProjects.totalPendingTransferFunds * (1 - feePercent/100)} </small>
-            </div>
-          </>
-          : null 
-        }
-        { myPendingTransferProjects.map((project, key) => renderMyProject(project, props, key) )}  
+         { showTransferInfo ? showTransferInfo(myPendingTransfers, props) : null }
+        { myPendingTransfers.projects.map((project, key) => renderMyProject(project, props, key) )}  
       </Tab>
       <Tab eventKey="openProjects" title="Open" className="bg-dark">
         { myOpenProjects.map((project, key) => renderMyProject(project, props, key) )}   
       </Tab>
       <Tab eventKey="closedProjects" title="Closed" className="bg-dark">
-        { myCancelledProjects.map((project, key) => renderMyProject(project, props, key) )}  
+        { myClosedProjects.map((project, key) => renderMyProject(project, props, key) )}  
       </Tab>
     </Tabs>
   )
@@ -106,6 +108,7 @@ class MyProjects extends Component {
   }
 
   render() {
+    console.log(this.props.myPendingTransferProjects)
     return (
       <div className="card bg-dark text-white">
         <div className="card-header">
@@ -125,19 +128,19 @@ function mapStateToProps(state) {
   const formattedProjectsLoaded = formattedProjectsLoadedSelector(state)
   const projectFundsTransfering = projectFundsTransferingSelector(state)
   const projectCancelling = projectCancellingSelector(state)
-  const myPendingTransferProjects = myPendingTransferProjectsSelector(state)
+  const myPendingTransfers = myPendingTransfersSelector(state)
   const feePercent = feePercentSelector(state)
   return {
     web3: web3Selector(state),
     crowdfunder: crowdfunderSelector(state),
     dai: daiSelector(state),
     account: accountSelector(state),
-    myPendingTransferProjects,
+    myPendingTransfers,
     myOpenProjects: myOpenProjectsSelector(state),
     myClosedProjects: myClosedProjectsSelector(state),
     showMyProjects: formattedProjectsLoaded && !projectFundsTransfering && !projectCancelling,
     feePercent,
-    showTransferInfo: myPendingTransferProjects.length > 0 && feePercentSelector
+    showTransferInfo: myPendingTransferProjects.length > 0 && feePercent
   }
 }
 
