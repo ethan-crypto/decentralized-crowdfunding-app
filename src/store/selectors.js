@@ -73,7 +73,6 @@ const formattedProjects = state => {
 	const groupedProjects = groupBy(projects, 'status')
 	// Fetch open, cancelled, failed, sucessful and pending transfer projects
 	projects = {
-		...projects,
 		allProjects: projects,
 		openProjects: get(groupedProjects, 'OPEN', []),
 		cancelledProjects: get(groupedProjects, 'CANCELLED', []),
@@ -151,7 +150,6 @@ const refundInfo = (project, refunds) => {
 		totalRefundAmount += refunds[i].refundAmount
 	}
 	return({
-		...refunds,
 		data: refunds,
 		totalRefundAmount: formatFunds(totalRefundAmount),
 		numberOfRefunds: refunds.length,
@@ -198,17 +196,15 @@ export const myPendingTransfersSelector = createSelector(
 	feePercent,
 	(projects, account, feePercent) => {
 		// fetch pendingTransferProjects
-		console.log(projects.pendingTransferProjects)
 		projects = projects.pendingTransferProjects
 		// filter projects by user
 		projects = projects.filter((p) => p.creator === account)
 		// Add up all the totalFunds from each pending transfer project 
-		let  totalCollectedProjectFunds
+		let totalCollectedProjectFunds = 0
 		projects.forEach((project) => {
 			totalCollectedProjectFunds += project.totalFunds
 		})  
 		return({
-			...projects,
 			projects,
 			totalPendingTransferFunds: totalCollectedProjectFunds * (1 - feePercent/100),
 			totalPendingTransferFee: totalCollectedProjectFunds * (feePercent/100)

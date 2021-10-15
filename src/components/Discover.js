@@ -49,7 +49,7 @@ class Discover extends Component {
               <ul id="imageList" className="list-group list-group-flush">
                 {renderContent(project)}
                 <li key={key} className="list-group-item py-2">
-                  {renderProgressBar(project, "#0075ff")}
+                  {renderProgressBar(project, project.projectTypeClass)}
                   {renderDataTable(project)}
                   <form className="row" 
                     onSubmit={(event) => {
@@ -62,7 +62,7 @@ class Discover extends Component {
                         document.getElementById(key.toString()).value = ''
                     }}}
                     >
-                    <div className="col-12 col-sm pr-sm-2">
+                    <div className="col-sm pe-sm-0">
                       <input
                         type="text"
                         placeholder="Dai Amount"
@@ -72,7 +72,7 @@ class Discover extends Component {
                         className="form-control form-control-sm bg-dark text-white"
                         required />
                     </div>
-                    <div className="col-12 col-sm-auto pl-sm-0">  
+                    <div className="col-sm-auto ps-sm-0">  
                       <button type="submit" className="btn btn-primary btn-block btn-sm">Contribute</button>
                     </div>
                   </form>

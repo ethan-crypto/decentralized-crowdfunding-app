@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { ProgressBar } from 'react-bootstrap'
+import { ProgressBar, OverlayTrigger, Tooltip } from 'react-bootstrap'
 import CreateProject from './CreateProject'
 import Discover from './Discover'
 import MyProjects from './MyProjects'
@@ -52,10 +52,18 @@ const renderContent = project => {
 }
 
 const renderProgressBar = (project, color) => {
-  console.log(project.percentFunded)
   return(
     <div className= "py-2">
-      <ProgressBar now = {project.percentFunded} variant ={project.projectTypeClass} label = {`${project.percentFunded}% funded`} />
+      <OverlayTrigger
+        placement="top"
+        overlay={
+          <Tooltip>
+            <strong>{project.percentFunded}%</strong> funded
+          </Tooltip>
+        }
+      >
+        <ProgressBar now = {project.percentFunded} variant ={project.projectTypeClass}  />
+      </OverlayTrigger>
       {project.refunds !== undefined ? renderRefundProgressBar(project.refunds) : null}
     </div>
   )
