@@ -21,39 +21,50 @@ import {
   loadFeePercent
 } from '../store/interactions'
 
-const showTransferInfo = (pendingTransfers, props) => {
+const showTransferAllButton = props => {
+  const { myPendingTransfers } = props
   return(
     <>
-      <button 
-        className="btn btn-primary btn-sm btn-block"
-        onClick={(e) => {
-          transferAllProjectFunds(props.dispatch, props.web3, props.account, pendingTransfers.projects, props.crowdfunder)
-        }}
+      <OverlayTrigger
+        placement='auto'
+        overlay={
+          <Tooltip>
+            <div>
+              <small>Fee: <strong>${myPendingTransfers.totalPendingTransferFee}</strong></small>
+            </div>
+            <div>
+              <small>Total: <strong>${myPendingTransfers.totalPendingTransferFunds}</strong></small>
+            </div>
+          </Tooltip>
+        }
       >
-        Transfer All
-      </button>
-      <div>
-        <small>Fee: ${pendingTransfers.totalPendingTransferFee} </small>
-      </div>
-      <div>
-        <small>Total: ${pendingTransfers.totalPendingTransferFunds} </small>
-      </div>
+        <button 
+          className="btn btn-primary btn-sm btn-block"
+          onClick={(e) => {
+            transferAllProjectFunds(props.dispatch, props.web3, props.account, myPendingTransfers.projects, props.crowdfunder)
+          }}
+        >
+          Transfer All
+        </button>
+      </OverlayTrigger>
     </>
   )
 }
 
 const renderCancelButton = (id, props) => {
   return(
-    <button
-      className="btn btn-link btn-sm float-right pt-0"
-      name={id}
-      onClick={(event) => {
-        console.log(event.target.name)
-        cancelProject(props.dispatch, props.web3, props.account, event.target.name, props.crowdfunder)
-      }}
-    >
-      Cancel Project
-    </button> 
+    <li key={id} className="list-group-item py-2"> 
+      <button
+        className="btn btn-link btn-sm float-right pt-0"
+        name={id}
+        onClick={(event) => {
+          console.log(event.target.name)
+          cancelProject(props.dispatch, props.web3, props.account, event.target.name, props.crowdfunder)
+        }}
+      >
+        Cancel Project
+      </button> 
+    </li>
   )  
 }
 
@@ -62,36 +73,24 @@ const renderMyProject = (myProject, props, key) => {
     <div className ="card mb-4" key={key} >
       <ul id="imageList" className="list-group list-group-flush">
         {props.renderContent(myProject)}
-        <li key={key} className="list-group-item py-2">
-          {props.renderProgressBar(myProject, myProject.barColor)}
-          {props.renderDataTable(myProject)}
-          {myProject.status === "OPEN" ? renderCancelButton(myProject.id, props) : null}
-        </li>
+        {myProject.status === "OPEN" ? renderCancelButton(myProject.id, props) : null}
       </ul>
     </div>
   )
 }
 
 const showMyProjects = props => {
-  const {
-    myPendingTransfers,
-    myOpenProjects,
-    myClosedProjects,
-    showTransferTotal, 
-    feePercent
-  } = props
-  console.log(showTransferInfo)
   return (
     <Tabs defaultActiveKey="pendingTransferProjects" className="bg-dark text-white">
       <Tab eventKey="pendingTransferProjects" title="Pending Transfer" className="bg-dark">
-         { props.showTransferInfo ? showTransferInfo(myPendingTransfers, props) : null }
-        { myPendingTransfers.projects.map((project, key) => renderMyProject(project, props, key) )}  
+         { props.showTransferAllButton ? showTransferAllButton(props) : null }
+        { props.myPendingTransfers.projects.map((project, key) => renderMyProject(project, props, key) )}  
       </Tab>
       <Tab eventKey="openProjects" title="Open" className="bg-dark">
-        { myOpenProjects.map((project, key) => renderMyProject(project, props, key) )}   
+        { props.myOpenProjects.map((project, key) => renderMyProject(project, props, key) )}   
       </Tab>
       <Tab eventKey="closedProjects" title="Closed" className="bg-dark">
-        { myClosedProjects.map((project, key) => renderMyProject(project, props, key) )}  
+        { props.myClosedProjects.map((project, key) => renderMyProject(project, props, key) )}  
       </Tab>
     </Tabs>
   )
@@ -108,7 +107,6 @@ class MyProjects extends Component {
   }
 
   render() {
-    console.log(this.props.myPendingTransfers)
     return (
       <div className="card bg-dark text-white">
         <div className="card-header">
@@ -140,7 +138,7 @@ function mapStateToProps(state) {
     myClosedProjects: myClosedProjectsSelector(state),
     showMyProjects: formattedProjectsLoaded && !projectFundsTransfering && !projectCancelling,
     feePercent,
-    showTransferInfo: myPendingTransfers.totalPendingTransferFunds > 0 && feePercent
+    showPendingTransfersInfo: myPendingTransfers.totalPendingTransferFunds > 0 && feePercent
   }
 }
 

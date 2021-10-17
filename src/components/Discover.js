@@ -40,18 +40,16 @@ class Discover extends Component {
         </div>
         <div className="card-body">
         { this.props.showOpenProjects ? 
-          discoverProjects.map((project, key) => {
+          discoverProjects.map((project) => {
           return(
-            <div className ="card mb-4" key={key} >
+            <div className ="card mb-4" key={project.id} >
               <div className="card-header">
                 <small className="text-muted">{project.creator}</small>
               </div>
               <ul id="imageList" className="list-group list-group-flush">
                 {renderContent(project)}
-                <li key={key} className="list-group-item py-2">
-                  {renderProgressBar(project, project.projectTypeClass)}
-                  {renderDataTable(project)}
-                  <form className="row" 
+                <li key={project.id} className="list-group-item py-2"> 
+                  <form className="row"  
                     onSubmit={(event) => {
                       event.preventDefault()
                       contributeToProject(dispatch, web3, contribution.amount, account, project.id, crowdfunder, dai)
@@ -59,20 +57,20 @@ class Discover extends Component {
                     onBlur={(event) => {
                       event.preventDefault()
                       if (!event.currentTarget.contains(event.relatedTarget)) {
-                        document.getElementById(key.toString()).value = ''
+                        document.getElementById(project.id).value = ''
                     }}}
                     >
-                    <div className="col-sm pe-sm-0">
+                    <div className="col-sm pe-sm-0 mb-sm-auto py-2">
                       <input
                         type="text"
                         placeholder="Dai Amount"
-                        id = {key.toString()}
+                        id = {project.id}
                         value = { contribution.id !== project.id ? '' : contribution.amount}
                         onChange={(e) => dispatch( contributionAmountChanged(e.target.value, project.id))}
                         className="form-control form-control-sm bg-dark text-white"
                         required />
                     </div>
-                    <div className="col-sm-auto ps-sm-0">  
+                    <div className="col-sm-auto ps-sm-0 mb-sm-auto py-2">  
                       <button type="submit" className="btn btn-primary btn-block btn-sm">Contribute</button>
                     </div>
                   </form>

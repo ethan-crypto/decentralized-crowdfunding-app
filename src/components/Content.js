@@ -1,9 +1,10 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { ProgressBar, OverlayTrigger, Tooltip } from 'react-bootstrap'
+import { ProgressBar, OverlayTrigger, Tooltip, Popover, PopoverHeader } from 'react-bootstrap'
 import CreateProject from './CreateProject'
 import Discover from './Discover'
 import MyProjects from './MyProjects'
+import MyContributions from './MyContributions'
 import { 
   crowdfunderSelector,
  } from '../store/selectors'
@@ -14,27 +15,31 @@ import {
   loadAllContributions
 } from '../store/interactions'
 
-const renderPopover = project => {
-
+const renderProjectPopover = project => {
+  return(
+    <Popover id="popover-positioned-auto">
+      <Popover.Header >
+        <small className="text-muted">{project.creator}</small>
+      </Popover.Header>
+      <ul id="imageList" className="list-group list-group-flush">
+        {renderContent(project)}
+      </ul>
+    </Popover>
+  )
 }
 
 const renderRefundProgressBar = refunds => {
   return(
-    <div className= "progress py-2">
-      <div className= "progress-bar bg-dark" style={{width: `${refunds.percentRefunded}%`}}>
-        {refunds.percentRefunded}% refunded
-      </div>
-    </div>
+    <ProgressBar now = {refunds.percentRefunded} variant ="dark"  />
   )
 }
 
-const renderRefundInfo = project => {
+const renderRefundInfo = refunds => {
   return (
     <tr>
       <td className= "small float-right">REFUNDS: </td>
       <td className= "small float-left mt-1 text-muted">
-        {project.totalRefundAmount > 0 ? `$${project.totalRefundAmount} refunded across ${project.numberOfRefunds} supporter${ project.numberOfRefunds !== 1 ? 's' : ''}
-        , ${Math.round(project.totalRefundAmount*100/project.formattedTotalFunds)}% refunded`:
+        {refunds.totalRefundAmount > 0 ? `$${refunds.totalRefundAmount} refunded across ${refunds.numberOfRefunds} supporter${ refunds.numberOfRefunds !== 1 ? 's' : ''}` :
         'None' } 
       </td>
     </tr>
@@ -43,56 +48,51 @@ const renderRefundInfo = project => {
 
 const renderContent = project => {
   return(
-    <li className="list-group-item">
-      <p className="text-center"><img src={`https://ipfs.infura.io/ipfs/${project.imgHash}`} style={{ maxWidth: '420px'}}/></p>
-      <p>{project.name}</p>
-      <small className="float-left mt-1 text-muted"> {project.description} </small>
-    </li>
+    <>
+      <li className="list-group-item">
+        <p className="text-center"><img src={`https://ipfs.infura.io/ipfs/${project.imgHash}`} style={{ maxWidth: '420px'}}/></p>
+        <p>{project.name}</p>
+        <small className="float-left mt-1 text-muted"> {project.description} </small>
+      </li>
+      <li key={project.id} className="list-group-item py-2">
+        <div className= "py-2">
+          <OverlayTrigger
+            placement="top"
+            overlay={
+              <Tooltip>
+                <strong>{project.percentFunded}%</strong> funded
+              </Tooltip>
+            }
+          >
+            <ProgressBar now = {project.percentFunded} variant ={project.projectTypeClass}  />
+          </OverlayTrigger>
+          {project.refunds !== undefined ? renderRefundProgressBar(project.refunds) : null}
+        </div>
+        <table className="table table-dark table-sm small mb-sm-2">
+          <tbody>
+            <tr>
+              <td className= "small float-right">GOAL: </td>
+              <td className= "small float-left mt-1 text-muted">Raise ${project.formattedFundGoal} in {project.timeGoalInDays} days</td>
+            </tr>
+            <tr>
+              <td className= "small float-right">PROGRESS: </td>
+              <td className= "small float-left mt-1 text-muted">{project.formattedTotalFunds > 0 ? 
+                `$${project.formattedTotalFunds} contributed across ${ project.supporterCount } supporter${ +project.supporterCount !== 1 ? 's' : ''}` : 
+                'None' }
+              </td>
+            </tr>
+            <tr>
+              <td className= "small float-right">{project.status !== "OPEN" ? "ENDED: " : "TIME LEFT: "}</td>
+              <td className= "small float-left mt-1 text-muted">{project.status !== "OPEN" ? project.endDate : project.timeLeft}</td>
+            </tr>
+            {project.formattedTotalFunds > 0 && project.refunds !== undefined ? renderRefundInfo(project.refunds) : null}
+          </tbody>
+        </table>
+      </li>
+    </>
   )
 }
 
-const renderProgressBar = (project, color) => {
-  return(
-    <div className= "py-2">
-      <OverlayTrigger
-        placement="top"
-        overlay={
-          <Tooltip>
-            <strong>{project.percentFunded}%</strong> funded
-          </Tooltip>
-        }
-      >
-        <ProgressBar now = {project.percentFunded} variant ={project.projectTypeClass}  />
-      </OverlayTrigger>
-      {project.refunds !== undefined ? renderRefundProgressBar(project.refunds) : null}
-    </div>
-  )
-}
-
-const renderDataTable = project => {
-  return(
-    <table className="table table-dark table-sm small">
-      <tbody>
-        <tr>
-          <td className= "small float-right">GOAL: </td>
-          <td className= "small float-left mt-1 text-muted">Raise ${project.formattedFundGoal} in {project.timeGoalInDays} days</td>
-        </tr>
-        <tr>
-          <td className= "small float-right">PROGRESS: </td>
-          <td className= "small float-left mt-1 text-muted">{project.formattedTotalFunds > 0 ? 
-            `$${project.formattedTotalFunds} contributed across ${ project.supporterCount } supporter${ +project.supporterCount !== 1 ? 's' : ''}` : 
-            'None' }
-          </td>
-        </tr>
-        <tr>
-          <td className= "small float-right">{project.status !== "OPEN" ? "ENDED: " : "TIME LEFT: "}</td>
-          <td className= "small float-left mt-1 text-muted">{project.status !== "OPEN" ? project.endDate : project.timeLeft}</td>
-        </tr>
-        {project.formattedTotalFunds > 0 && project.refunds !== undefined ? renderRefundInfo(project) : null}
-      </tbody>
-    </table>
-  )
-}
 
 
 class Content extends Component {
@@ -112,16 +112,14 @@ class Content extends Component {
       <div className="content">
         <Discover
           renderContent ={renderContent}
-          renderProgressBar ={renderProgressBar}
-          renderDataTable ={renderDataTable}
         />
-        <MyProjects 
-          renderContent ={renderContent}
-          renderProgressBar ={renderProgressBar}
-          renderDataTable ={renderDataTable}
+        <MyContributions
+          renderProjectPopover ={renderProjectPopover}
         />
         <div className="vertical-split">
-          
+          <MyProjects 
+            renderContent ={renderContent}
+          />
           <CreateProject />
         </div>
       </div>

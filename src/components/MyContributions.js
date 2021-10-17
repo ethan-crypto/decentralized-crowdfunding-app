@@ -1,39 +1,56 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { OverlayTrigger, Tooltip, Popover, PopoverBody, PopoverHeader } from 'react-bootstrap'
+import { OverlayTrigger, Tooltip, Tabs, Tab, Popover, PopoverHeader, PopoverBody } from 'react-bootstrap'
 import Spinner from './Spinner'
 import {
   crowdfunderSelector,
   accountSelector,
   web3Selector,
-  myPendingContributionRefundsSelector,
+  myPendingRefundsSelector,
+  myHeldContributionsSelector,
+  myReleasedContributionsSelector,
   formattedContributionsLoadedSelector,
   contributionRefundingSelector,
 } from '../store/selectors'
-import { refundContribution } from '../store/interactions'
+import { refundContributions } from '../store/interactions'
 
-const projectInfo = project => {
-  <Popover id="popover-positioned-auto">
-    <Popover.Header >
-      <small className="text-muted">{project.creator}</small>
-    </Popover.Header>
-    <Popover.Body>
-      <strong>Holy guacamole!</strong> Check this info.
-    </Popover.Body>
-  </Popover>
+const showRefundAllButton = props => {
+  return(
+    <>
+      <OverlayTrigger
+        placement='auto'
+        overlay={
+          <Tooltip>
+            <strong>${props.myPendingRefunds.refundTotal}</strong> in total
+          </Tooltip>
+        }
+      >
+        <button
+          className="btn btn-primary btn-block btn-sm"
+          onClick={(event) => {
+            refundContributions(props.dispatch, props.web3, props.account, props.myPendingRefunds.contributions, props.crowdfunder)
+          }}
+        >
+          Refund All
+        </button>
+      </OverlayTrigger>
+      
+    </>
+  )
 }
 
+
 const showMyPendingContributionRefunds = (props) => {
-  const { myPendingContributionRefunds, dispatch, exchange, account } = props
+  const { myPendingRefunds, renderProjectPopover, dispatch, exchange, account } = props
 
   return(
     <tbody>
-      { myPendingContributionRefunds.map((contribution) => {
+      { myPendingRefunds.contributions.map((contribution) => {
         return (
           <OverlayTrigger
             key={contribution.id}
-            placement='auto'
-            overlay={projectInfo(contribution.project)}
+            placement='left'
+            overlay={renderProjectPopover(contribution.project)}
           >
             <tr 
               key={contribution.id}
@@ -52,8 +69,8 @@ const showMyPendingContributionRefunds = (props) => {
 }
 
 const showMyHeldContributions = (props) => {
+  /*
   const { myFilledOrders } = props
-
   return(
     <tbody>
       { myFilledOrders.map((order) => {
@@ -67,9 +84,11 @@ const showMyHeldContributions = (props) => {
       }) }
     </tbody>
   )
+  */
 }
 
 const showMyReleasedContributions = (props) => {
+  /*
   const { myFilledOrders } = props
 
   return(
@@ -85,6 +104,7 @@ const showMyReleasedContributions = (props) => {
       }) }
     </tbody>
   )
+  */
 }
 
 
@@ -100,16 +120,7 @@ class MyContributions extends Component {
         <div className="card-body">
           <Tabs defaultActiveKey="pendingRefund" className="bg-dark text-white">
             <Tab eventKey="pendingRefund" title="Pending Refund" className="bg-dark">
-              <button
-                  className="btn btn-primary btn-block btn-sm"
-                  name={myProject.id}
-                  onClick={(event) => {
-                    console.log(event.target.name)
-                    refundContributions(this.props.dispatch, this.props.web3, this.props.account, event.target.name, this.props.crowdfunder)
-                  }}
-                >
-                  Transfer
-              </button>
+              { this.props.showRefundAllButton ? showRefundAllButton(this.props) : null }
               <table className="table table-dark table-sm small">
                 <thead>
                   <tr>
@@ -119,23 +130,23 @@ class MyContributions extends Component {
                     <th>Time</th>
                   </tr>
                 </thead>
-                { this.props.showMyPendingContributionRefunds ? showMyContributionRefunds(this.props) : <Spinner type="table" />}
+                { this.props.showMyContributions ? showMyPendingContributionRefunds(this.props) : <Spinner type="table" />}
               </table>
             </Tab>
-            <Tab eventKey="held" title="Held">
+            <Tab eventKey="held" title="Held" className= "">
               <table className="table table-dark table-sm small">
                 <thead>
                   <tr>
                     <th>Project</th>
                     <th>Amount</th>
                     <th>Supporter #</th>
-                    <th>Time Left</th>
+                    <th>Time </th>
                   </tr>
                 </thead>
-                { this.props.showMyHeldContributions ? showMyHeldContributions(this.props) : <Spinner type="table" />}
+                { this.props.showMyContributions ? showMyHeldContributions(this.props) : <Spinner type="table" />}
               </table>
             </Tab>
-            <Tab eventKey="released" title="Released">
+            <Tab eventKey="released" title="Released" className= "">
               <table className="table table-dark table-sm small">
                 <thead>
                   <tr>
@@ -145,7 +156,7 @@ class MyContributions extends Component {
                     <th>Time</th>
                   </tr>
                 </thead>
-                { this.props.showMyReleasedContributions ? showMyReleasedContributions(this.props) : <Spinner type="table" />}
+                { this.props.showMyContributions ? showMyReleasedContributions(this.props) : <Spinner type="table" />}
               </table>
             </Tab>
           </Tabs>
@@ -156,13 +167,17 @@ class MyContributions extends Component {
 }
 
 function mapStateToProps(state) {
-  const formattedContributionsLoadedSelector = formattedContributionsLoadedSelector(state)
+  const formattedContributionsLoaded = formattedContributionsLoadedSelector(state)
   const contributionRefunding = contributionRefundingSelector(state)
+  const myPendingRefunds = myPendingRefundsSelector(state)
+  console.log(myPendingRefunds)
   return {
     web3: web3Selector(state),
     crowdfunder: crowdfunderSelector(state),
     account: accountSelector(state),
-    myPendingContributionRefunds = myPendingContributionRefundsSelector(state)
+    myPendingRefunds,
+    showMyContributions: !contributionRefunding && formattedContributionsLoaded,
+    showRefundAllButton: myPendingRefunds.refundTotal > 0
   }
 }
 

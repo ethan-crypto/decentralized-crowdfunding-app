@@ -7970,12 +7970,12 @@
     "5777": {
       "events": {},
       "links": {},
-      "address": "0x4Db3AE1BF179b1988D8Fe3eb4f4fCCF23e3578Bf",
-      "transactionHash": "0x9ffeff6a80f0016a2a5b77135cb35277309a8a9edf9938e25823703d1af91ba3"
+      "address": "0xB3BE7DCE957A97dB7c8fD890893Ee6565AAB5FAb",
+      "transactionHash": "0xc71e5954eec11d67cfbd0e7d722f2a0423f2f72e62e3b99ef80d741b6a85d9c4"
     }
   },
   "schemaVersion": "3.4.1",
-  "updatedAt": "2021-10-13T18:17:19.607Z",
+  "updatedAt": "2021-10-17T16:54:50.942Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",

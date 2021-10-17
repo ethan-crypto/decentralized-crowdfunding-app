@@ -15,12 +15,11 @@
 }   
 
 .content > div {
-  width: 22%;
+  width: 33%;
   padding-right: 8px
 }
 
 .content > div:first-child {
-  width: 33%;
   min-width: 220px
 }
 

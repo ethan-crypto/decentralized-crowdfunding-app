@@ -142,18 +142,19 @@ const formatProject = (project, successful, cancelled, allRefunds) => {
 }
 
 const refundInfo = (project, refunds) => {
-	// Filter by refunds that applied to this particular project
-	refunds = refunds.filter((r) => project.id === r.id)
+	//fetch refunds that apply to this project
+	refunds = refunds.filter((r) => r.id === project.id)
 	// Add up all the refunds to aquire refund total
 	let totalRefundAmount = 0
 	for(var i = 0 ; i < refunds.length ; i++) {
 		totalRefundAmount += refunds[i].refundAmount
 	}
+	const percentRefunded = Math.round(totalRefundAmount*100/project.totalFunds)
 	return({
 		data: refunds,
 		totalRefundAmount: formatFunds(totalRefundAmount),
 		numberOfRefunds: refunds.length,
-		percentRefunded: Math.round(totalRefundAmount*100/project.totalFunds)
+		percentRefunded
 	})
 
 }
@@ -206,8 +207,8 @@ export const myPendingTransfersSelector = createSelector(
 		})  
 		return({
 			projects,
-			totalPendingTransferFunds: totalCollectedProjectFunds * (1 - feePercent/100),
-			totalPendingTransferFee: totalCollectedProjectFunds * (feePercent/100)
+			totalPendingTransferFunds: formatFunds(totalCollectedProjectFunds * (1 - feePercent/100)),
+			totalPendingTransferFee: formatFunds(totalCollectedProjectFunds * (feePercent/100))
 		})
 	}
 )
@@ -241,38 +242,47 @@ export const myClosedProjectsSelector = createSelector(
 )
 
 //My Contributions
+
 const formattedContributions = state => 
 	allContributions(state).map((contribution) => 
-		formatContribution(contribution, formattedProjects(state).allProjects[contribution.id - 1])
+		formatContribution(contribution, formattedProjects(state))
 	)
 
-const formatContribution = (contribution, project) => {
+const formatContribution = (contribution, projects) => {
 	return({
 		...contribution,
-		project,
+		project: projects.allProjects[contribution.id - 1],
 		formattedTotalFunds: formatFunds(contribution.totalFunds),
 		formattedFundAmount: formatFunds(contribution.fundAmount),
 		formattedTimestamp: moment.unix(contribution.timestamp).format('M/D/YYYY h:mm:ss a')
 	})
 }
 
+
 const myFormattedContributions = state => formattedContributions(state).filter((c) => c.supporter === account(state))
 
-const formattedContributionsLoaded = state => formattedProjectsLoaded(state) && allContributions(state)
+const formattedContributionsLoaded = state => formattedProjectsLoaded(state) && allContributionsLoaded(state)
 
 export const formattedContributionsLoadedSelector = createSelector(formattedContributionsLoaded, (loaded) => loaded)
 
-export const myPendingContributionRefundsSelector = createSelector(
+export const myPendingRefundsSelector = createSelector(
 	myFormattedContributions,
-	account,
-	(contributions, account) => {
+	(contributions) => {
 		// fetch contributions to projects that have either cancelled or failed
 		contributions = contributions.filter((c) => c.project.status === 'CANCELLED' || c.project.status === 'FAILED')
 		// fetch contributions that haven't been refunded by user
-		contributions = contributions.filter((c) => c.project.refunds.data.some((r) => get(r, 'supporter', null) !== account))
-		return(contributions)
+		contributions = reject(contributions, (c) => c.project.refunds.data.some((r) => r.supporter === c.supporter))
+		let refundTotal = 0
+		contributions.forEach((contribution) => {
+			refundTotal += contribution.fundAmount
+		})  
+		return({
+			contributions,
+			refundTotal: formatFunds(refundTotal)
+		})
 	}
 )
+
 
 export const myHeldContributionsSelector = createSelector (
 	myFormattedContributions,

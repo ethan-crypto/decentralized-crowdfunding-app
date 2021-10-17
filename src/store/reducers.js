@@ -74,8 +74,8 @@ function crowdfunder(state = {}, action) {
 			if(index === -1) {
 				data = [...state.allProjects.data, action.project]
 			} else {
-				data = state.allProject.data
-			}
+				data = state.allProjects.data
+			}	
 
 			return {
 				...state,
@@ -127,7 +127,7 @@ function crowdfunder(state = {}, action) {
 			return {...state, contributionRefunding: true}
 		case 'CONTRIBUTION_REFUNDED':
 			//Prevent duplicate refunds
-			index = state.allRefunds.data.findIndex(refund => refund.id === action.refund.id);
+			index = state.allRefunds.data.findIndex(refund => refund.id === action.refund.id && refund.supporter === action.refund.supporter);
 
 			if(index === -1) {
 				data = [...state.allRefunds.data, action.refund]
