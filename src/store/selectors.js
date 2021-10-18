@@ -147,12 +147,12 @@ const refundInfo = (project, refunds) => {
 	// Add up all the refunds to aquire refund total
 	let totalRefundAmount = 0
 	for(var i = 0 ; i < refunds.length ; i++) {
-		totalRefundAmount += refunds[i].refundAmount
+		totalRefundAmount += +refunds[i].refundAmount
 	}
 	const percentRefunded = Math.round(totalRefundAmount*100/project.totalFunds)
 	return({
 		data: refunds,
-		totalRefundAmount: formatFunds(totalRefundAmount),
+		formattedTotalRefundAmount: formatFunds(totalRefundAmount),
 		numberOfRefunds: refunds.length,
 		percentRefunded
 	})
@@ -172,7 +172,7 @@ export const discoverProjectsSelector = createSelector(
 		//fetch openProjects
 		projects = projects.openProjects
 		// filter openProjects by those whos creator is not the user
-		projects.filter((p) => p.creator !== account)
+		projects = projects.filter((p) => p.creator !== account)
 		return projects
 	}	
 )
@@ -293,9 +293,9 @@ export const myReleasedContributionsSelector = createSelector (
 	myFormattedContributions,
 	(contributions) => {
 		// fetch contributions to projects that are not open or pending transfer
-		contributions = contributions.filter((c) => c.project.status !== 'OPEN' || c.project.status !== 'PENDING_TRANSFER')
-		// fetch contributions that have been refunded by user
-		contributions = contributions.filter((c) => get(c, 'project.refunds.data', []).some((r) => get(r, 'supporter', null) === account))
+		contributions = reject(contributions, (c) => c.project.status === 'OPEN' || c.project.status === 'PENDING_TRANSFER')
+		// fetch contributions that have been refunded by user if the project cancelled or failed
+		contributions = contributions.filter((c) => c.project.status === "SUCCEEDED" ? true : get(c, 'project.refunds.data', []).some((r) => r.supporter === c.supporter))
 		return(contributions)
 	}
 )

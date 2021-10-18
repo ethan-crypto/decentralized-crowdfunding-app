@@ -29,8 +29,18 @@ const renderProjectPopover = project => {
 }
 
 const renderRefundProgressBar = refunds => {
+  
   return(
-    <ProgressBar now = {refunds.percentRefunded} variant ="dark"  />
+    <OverlayTrigger
+      placement="bottom"
+      overlay={
+        <Tooltip>
+          <strong>{refunds.percentRefunded}%</strong> refunded
+        </Tooltip>
+      }
+    >
+      <ProgressBar now = {refunds.percentRefunded} variant ="dark"  />
+    </OverlayTrigger>
   )
 }
 
@@ -39,7 +49,7 @@ const renderRefundInfo = refunds => {
     <tr>
       <td className= "small float-right">REFUNDS: </td>
       <td className= "small float-left mt-1 text-muted">
-        {refunds.totalRefundAmount > 0 ? `$${refunds.totalRefundAmount} refunded across ${refunds.numberOfRefunds} supporter${ refunds.numberOfRefunds !== 1 ? 's' : ''}` :
+        {refunds.formattedTotalRefundAmount > 0 ? `$${refunds.formattedTotalRefundAmount} refunded across ${refunds.numberOfRefunds} supporter${ refunds.numberOfRefunds !== 1 ? 's' : ''}` :
         'None' } 
       </td>
     </tr>

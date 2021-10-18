@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { Tabs, Tab } from 'react-bootstrap'
+import { Tabs, Tab, OverlayTrigger, Tooltip } from 'react-bootstrap'
 import Spinner from './Spinner'
 import { 
   crowdfunderSelector,
@@ -138,7 +138,7 @@ function mapStateToProps(state) {
     myClosedProjects: myClosedProjectsSelector(state),
     showMyProjects: formattedProjectsLoaded && !projectFundsTransfering && !projectCancelling,
     feePercent,
-    showPendingTransfersInfo: myPendingTransfers.totalPendingTransferFunds > 0 && feePercent
+    showTransferAllButton: myPendingTransfers.totalPendingTransferFunds > 0 && feePercent
   }
 }
 

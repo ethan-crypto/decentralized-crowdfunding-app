@@ -32,33 +32,42 @@ function crowdfunder(state = {}, action) {
 			return { ...state, successfulProjects: { loaded: true, data: action.successfulProjects } }
 		case 'ALL_PROJECTS_LOADED':
 			return { ...state, allProjects: { loaded: true, data: action.allProjects } }
+		case 'ALL_CONTRIBUTIONS_LOADED':
+			return {...state, allContributions: { loaded: true, data: action.contributions }}
 		case 'CONTRIBUTING_TO_PROJECT':
 			return { ...state, contribution: { ...state.contribution, amount: null, id: null, loading: true } }
 		case 'CONTRIBUTION_AMOUNT_CHANGED':
 			return { ...state, contribution: { ...state.contribution, amount: action.amount, id: action.id } }
 		case 'CONTRIBUTED_TO_PROJECT':
+			let projectData, contributionData
 			//Prevent duplicate contributions
 			index = state.allProjects.data.findIndex( 
 				project => project.id === action.contribution.id &&
 				+project.totalFunds + +action.contribution.fundAmount === +action.contribution.totalFunds
 			)
 			if(index !== -1) {
-				data = state.allProjects.data
-				data[index] = {
+				projectData = state.allProjects.data
+				projectData[index] = {
 					...state.allProjects.data[index], 
 					totalFunds: action.contribution.totalFunds,
 					supporterCount: action.contribution.supporterCount
 				}
+				contributionData = [...state.allContributions.data, action.contribution]
 			}
 			else {
-				data = state.allProjects.data
+				projectData = state.allProjects.data
+				contributionData = state.allContributions.data
 			}
 
 			return { 
 				...state, 
 				allProjects: { 
 					...state.allProjects,
-					data				
+					data: projectData				
+				},
+				allContributions: {
+					...state.allContributions,
+					data: contributionData
 				},
 				contribution: { ...state.contribution, loading: false },
 				
@@ -121,8 +130,6 @@ function crowdfunder(state = {}, action) {
 				},
 				projectFundsTransfering: false
 			}
-		case 'ALL_CONTRIBUTIONS_LOADED':
-			return {...state, allContributions: { loaded: true, data: action.contributions }}
 		case 'CONTRIBUTION_REFUNDING':
 			return {...state, contributionRefunding: true}
 		case 'CONTRIBUTION_REFUNDED':

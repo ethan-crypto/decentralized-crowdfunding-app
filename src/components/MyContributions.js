@@ -11,8 +11,10 @@ import {
   myReleasedContributionsSelector,
   formattedContributionsLoadedSelector,
   contributionRefundingSelector,
+  contributionSelector
 } from '../store/selectors'
 import { refundContributions } from '../store/interactions'
+
 
 const showRefundAllButton = props => {
   return(
@@ -34,80 +36,66 @@ const showRefundAllButton = props => {
           Refund All
         </button>
       </OverlayTrigger>
-      
     </>
   )
 }
 
 
-const showMyPendingContributionRefunds = (props) => {
-  const { myPendingRefunds, renderProjectPopover, dispatch, exchange, account } = props
-
-  return(
-    <tbody>
-      { myPendingRefunds.contributions.map((contribution) => {
-        return (
-          <OverlayTrigger
-            key={contribution.id}
-            placement='left'
-            overlay={renderProjectPopover(contribution.project)}
-          >
-            <tr 
+const renderMyContributions = (contributions, popover) => {
+  return (
+    <table className="table table-dark table-sm small">
+      <thead>
+        <tr>
+          <th>Project</th>
+          <th>Amount</th>
+          <th>Supporter #</th>
+          <th>Time</th>
+        </tr>
+      </thead> 
+      <tbody>
+        { contributions.map((contribution) => {
+          return (
+            <OverlayTrigger
               key={contribution.id}
-              className="myContributions-contribution"
+              trigger = 'click'
+              rootClose
+              placement='left'
+              overlay={popover(contribution.project)}
             >
-              <td className={`text-${contribution.project.projectTypeClass}`}>{contribution.project.name}</td>
-              <td>${contribution.formattedFundAmount}</td>
-              <td>{contribution.supporterCount}</td>
-              <td className="text-muted">{contribution.formattedTimestamp}</td>
-            </tr>
-          </OverlayTrigger>
-        )
-      }) }
-    </tbody>
+              <tr 
+                key={contribution.id}
+                className="myContributions-contribution"
+              >
+                <td className={`text-${contribution.project.projectTypeClass}`}>{contribution.project.name}</td>
+                <td>${contribution.formattedFundAmount}</td>
+                <td>{contribution.supporterCount}</td>
+                <td className="text-muted">{contribution.formattedTimestamp}</td>
+              </tr>
+            </OverlayTrigger>
+          )
+        }) }
+      </tbody>        
+    </table>
+
   )
 }
 
-const showMyHeldContributions = (props) => {
-  /*
-  const { myFilledOrders } = props
+const showMyContributions = props => {
   return(
-    <tbody>
-      { myFilledOrders.map((order) => {
-        return (
-          <tr key={order.id}>
-            <td className="text-muted">{order.formattedTimestamp}</td>
-            <td className={`text-${order.orderTypeClass}`}>{order.orderSign}{order.tokenAmount}</td>
-            <td className={`text-${order.orderTypeClass}`}>{order.tokenPrice}</td>
-          </tr>
-        )
-      }) }
-    </tbody>
+    <Tabs defaultActiveKey="pendingRefund" className="bg-dark text-white">
+      <Tab eventKey="pendingRefund" title="Pending Refund" className="bg-dark">
+        { props.showRefundAllButton ? showRefundAllButton(props) : null }
+        { renderMyContributions(props.myPendingRefunds.contributions, props.renderProjectPopover)}
+      </Tab>
+      <Tab eventKey="held" title="Held" className= "">
+        { renderMyContributions(props.myHeldContributions, props.renderProjectPopover)}
+      </Tab>
+      <Tab eventKey="released" title="Released" className= "">
+        { renderMyContributions(props.myReleasedContributions, props.renderProjectPopover)}
+      </Tab>
+    </Tabs>
   )
-  */
 }
-
-const showMyReleasedContributions = (props) => {
-  /*
-  const { myFilledOrders } = props
-
-  return(
-    <tbody>
-      { myFilledOrders.map((order) => {
-        return (
-          <tr key={order.id}>
-            <td className="text-muted">{order.formattedTimestamp}</td>
-            <td className={`text-${order.orderTypeClass}`}>{order.orderSign}{order.tokenAmount}</td>
-            <td className={`text-${order.orderTypeClass}`}>{order.tokenPrice}</td>
-          </tr>
-        )
-      }) }
-    </tbody>
-  )
-  */
-}
-
-
 
 class MyContributions extends Component {
 
@@ -118,48 +106,7 @@ class MyContributions extends Component {
           My Contributions
         </div>
         <div className="card-body">
-          <Tabs defaultActiveKey="pendingRefund" className="bg-dark text-white">
-            <Tab eventKey="pendingRefund" title="Pending Refund" className="bg-dark">
-              { this.props.showRefundAllButton ? showRefundAllButton(this.props) : null }
-              <table className="table table-dark table-sm small">
-                <thead>
-                  <tr>
-                    <th>Project</th>
-                    <th>Amount</th>
-                    <th>Supporter #</th>
-                    <th>Time</th>
-                  </tr>
-                </thead>
-                { this.props.showMyContributions ? showMyPendingContributionRefunds(this.props) : <Spinner type="table" />}
-              </table>
-            </Tab>
-            <Tab eventKey="held" title="Held" className= "">
-              <table className="table table-dark table-sm small">
-                <thead>
-                  <tr>
-                    <th>Project</th>
-                    <th>Amount</th>
-                    <th>Supporter #</th>
-                    <th>Time </th>
-                  </tr>
-                </thead>
-                { this.props.showMyContributions ? showMyHeldContributions(this.props) : <Spinner type="table" />}
-              </table>
-            </Tab>
-            <Tab eventKey="released" title="Released" className= "">
-              <table className="table table-dark table-sm small">
-                <thead>
-                  <tr>
-                    <th>Project</th>
-                    <th>Amount</th>
-                    <th>Supporter #</th>
-                    <th>Time</th>
-                  </tr>
-                </thead>
-                { this.props.showMyContributions ? showMyReleasedContributions(this.props) : <Spinner type="table" />}
-              </table>
-            </Tab>
-          </Tabs>
+          { this.props.showMyContributions ? showMyContributions(this.props) : <Spinner />}
         </div>
       </div>
     )
@@ -170,13 +117,16 @@ function mapStateToProps(state) {
   const formattedContributionsLoaded = formattedContributionsLoadedSelector(state)
   const contributionRefunding = contributionRefundingSelector(state)
   const myPendingRefunds = myPendingRefundsSelector(state)
+  const contribution = contributionSelector(state)
   console.log(myPendingRefunds)
   return {
     web3: web3Selector(state),
     crowdfunder: crowdfunderSelector(state),
     account: accountSelector(state),
     myPendingRefunds,
-    showMyContributions: !contributionRefunding && formattedContributionsLoaded,
+    myHeldContributions: myHeldContributionsSelector(state),
+    myReleasedContributions: myReleasedContributionsSelector(state),
+    showMyContributions: !contributionRefunding && !contribution.loading && formattedContributionsLoaded,
     showRefundAllButton: myPendingRefunds.refundTotal > 0
   }
 }
