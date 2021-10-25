@@ -1,8 +1,20 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { accountSelector } from '../store/selectors'
+import { 
+  accountSelector,
+  daiSelector,
+  daiBalanceSelector
+} from '../store/selectors'
+import { loadDaiBalance } from '../store/interactions'
 
 class Navbar extends Component {
+  componentDidMount() {
+    this.loadBlockchainData(this.props)
+  }
+  async loadBlockchainData(props) {
+    const { dispatch, dai, account } = props
+    await loadDaiBalance(dai, dispatch, account)
+  }
   render() {
     return (
       <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
@@ -21,6 +33,17 @@ class Navbar extends Component {
               {this.props.account}
             </a>
           </li>
+          <li className="nav-item">
+            <a
+              className="nav-link small"
+              href= "https://oasis.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+             DAI Balance:<strong> ${this.props.daiBalance} </strong>
+            </a>
+
+          </li>
         </ul>
       </nav>
     )
@@ -29,7 +52,9 @@ class Navbar extends Component {
 
 function mapStateToProps(state) {
   return {
-    account: accountSelector(state)
+    account: accountSelector(state),
+    dai: daiSelector(state),
+    daiBalance: daiBalanceSelector(state)
   }
 }
 

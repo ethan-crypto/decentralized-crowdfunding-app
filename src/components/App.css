@@ -103,11 +103,17 @@
   border-bottom: 1px solid #007bff;
 }
 
-tr.myContributions-contribution {
+tr.contributions-contribution {
   cursor: pointer;
 }
 
+tr.refunds-refund {
+  cursor: pointer;
+}
 
+tr.transfers-transfer {
+  cursor: pointer;
+}
 form > div {
     display: flex;
     flex-flow: row nowrap;

@@ -8,8 +8,11 @@ import {
   loadAccount,
   loadDai,
   loadCrowdfunder
- } from '../store/interactions'
-import { contractsLoadedSelector } from '../store/selectors'
+} from '../store/interactions'
+import { 
+  contractsLoadedSelector,
+  daiLoadedSelector
+} from '../store/selectors'
 
 class App extends Component {
   componentDidMount() {
@@ -33,7 +36,7 @@ class App extends Component {
   render() {
     return (
       <div>
-        <Navbar />
+        { this.props.daiLoaded ? < Navbar /> : <div className="dai"></div>}
         { this.props.contractsLoaded ? <Content /> : <div className="content"></div> }
       </div>
     );
@@ -42,6 +45,7 @@ class App extends Component {
 
 function mapStateToProps(state) {
   return {
+    daiLoaded: daiLoadedSelector(state),
     contractsLoaded: contractsLoadedSelector(state)
   }
 }

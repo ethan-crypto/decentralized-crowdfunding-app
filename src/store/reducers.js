@@ -16,6 +16,8 @@ function dai(state = {}, action) {
 	switch(action.type) {
 		case 'DAI_LOADED':
 			return { ...state, loaded: true, contract: action.contract}
+		case 'DAI_BALANCE_LOADED':
+			return {...state, balance: action.balance }
 		default:
 			return state
 	}

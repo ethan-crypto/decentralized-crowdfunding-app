@@ -25,3 +25,5 @@ export const formatFunds = (funds) => {
 
   return funds
 }
+
+export const formatBalance = (balance) => formatFunds(balance)

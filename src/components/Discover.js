@@ -29,14 +29,12 @@ class Discover extends Component {
       crowdfunder,
       dai,
       renderContent,
-      renderProgressBar,
-      renderDataTable,
       discoverProjects
     } = this.props
     return(
       <div className="card bg-dark text-white">
         <div className="card-header">
-          Open Projects
+          Discover
         </div>
         <div className="card-body">
         { this.props.showOpenProjects ? 

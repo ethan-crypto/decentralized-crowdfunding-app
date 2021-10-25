@@ -151,6 +151,13 @@ export function feePercentLoaded(percent) {
 	}
 }
 
+export function daiBalanceLoaded(balance) {
+	return {
+		type: 'DAI_BALANCE_LOADED',
+		balance
+	}
+}
+
 
 
 

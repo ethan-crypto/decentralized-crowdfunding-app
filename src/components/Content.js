@@ -1,10 +1,11 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { ProgressBar, OverlayTrigger, Tooltip, Popover, PopoverHeader } from 'react-bootstrap'
+import { ProgressBar, OverlayTrigger, Tooltip, Popover } from 'react-bootstrap'
 import CreateProject from './CreateProject'
 import Discover from './Discover'
 import MyProjects from './MyProjects'
 import MyContributions from './MyContributions'
+import Transactions from './Transactions'
 import { 
   crowdfunderSelector,
  } from '../store/selectors'
@@ -57,6 +58,7 @@ const renderRefundInfo = refunds => {
 }
 
 const renderContent = project => {
+  const projectRefundable = project.formattedTotalFunds > 0 && project.refunds !== undefined
   return(
     <>
       <li className="list-group-item">
@@ -76,7 +78,7 @@ const renderContent = project => {
           >
             <ProgressBar now = {project.percentFunded} variant ={project.projectTypeClass}  />
           </OverlayTrigger>
-          {project.refunds !== undefined ? renderRefundProgressBar(project.refunds) : null}
+          { projectRefundable ? renderRefundProgressBar(project.refunds) : null}
         </div>
         <table className="table table-dark table-sm small mb-sm-2">
           <tbody>
@@ -92,10 +94,10 @@ const renderContent = project => {
               </td>
             </tr>
             <tr>
-              <td className= "small float-right">{project.status !== "OPEN" ? "ENDED: " : "TIME LEFT: "}</td>
-              <td className= "small float-left mt-1 text-muted">{project.status !== "OPEN" ? project.endDate : project.timeLeft}</td>
+              <td className= "small float-right">{project.status === "OPEN" ? "TIME LEFT: " : project.status === "CANCELLED" ? "CANCELLED: " : "ENDED: "}</td>
+              <td className= "small float-left mt-1 text-muted">{project.status === "OPEN" ? project.timeLeft : project.status === "CANCELLED" ? project.cancelledDate : project.endDate }</td>
             </tr>
-            {project.formattedTotalFunds > 0 && project.refunds !== undefined ? renderRefundInfo(project.refunds) : null}
+            { projectRefundable ? renderRefundInfo(project.refunds) : null}
           </tbody>
         </table>
       </li>
@@ -123,9 +125,14 @@ class Content extends Component {
         <Discover
           renderContent ={renderContent}
         />
-        <MyContributions
-          renderProjectPopover ={renderProjectPopover}
-        />
+        <div className="vertical-split">
+          <MyContributions
+            renderProjectPopover ={renderProjectPopover}
+          />
+          <Transactions
+            renderProjectPopover ={renderProjectPopover}
+          />
+        </div>
         <div className="vertical-split">
           <MyProjects 
             renderContent ={renderContent}

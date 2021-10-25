@@ -1,7 +1,7 @@
-import { get, reject, groupBy, without } from 'lodash'
+import { get, reject, groupBy } from 'lodash'
 import { createSelector } from 'reselect'
 import moment from 'moment'
-import { futureTime, formatFunds, GREEN, RED, BLUE, ORANGE, GREY, DARK_GREY } from '../helpers'
+import { futureTime, formatFunds, formatBalance, GREEN, RED, BLUE, ORANGE, GREY } from '../helpers'
 require('moment-countdown')
 
 const account = state => get(state, 'web3.account')
@@ -27,6 +27,9 @@ export const contractsLoadedSelector = createSelector(
 	crowdfunderLoaded,
 	(dl, cl) => (dl && cl)
 )
+
+const daiBalance = state => get(state, 'dai.balance', null)
+export const daiBalanceSelector = createSelector(daiBalance, balance => formatBalance(balance))
 
 const allProjectsLoaded = state => get(state, 'crowdfunder.allProjects.loaded', false)
 const allProjects = state => get(state, 'crowdfunder.allProjects.data', [])
@@ -120,14 +123,14 @@ const formatProject = (project, successful, cancelled, allRefunds) => {
 			projectTypeClass: GREEN,
 			feeAmount: formatFunds(successfulProject.transferAmount),
 			transferAmount: formatFunds(successfulProject.transferAmount), 
-			transferedDate: moment.unix(successfulProject.timestamp).format('M/D/YYYY h:mm:ss a'),
+			transferedDate: moment.unix(successfulProject.timestamp).format('M/D/YYYY h:mm:ss a')
 		}
 	}
 	else {
 		project = {
 			...project,
 			status: "PENDING_TRANSFER",
-			projectTypeClass: ORANGE, 
+			projectTypeClass: ORANGE
 		}
 	}
 	return({
@@ -301,6 +304,7 @@ export const myReleasedContributionsSelector = createSelector (
 )
 
 //Transactions
+export const transactionsLoadedSelector = createSelector (formattedContributionsLoaded, (loaded) => loaded)
 
 export const transfersSelector = createSelector (
 	formattedProjects,
@@ -321,12 +325,13 @@ export const refundsSelector = createSelector (
 	formattedProjects,
 	(refunds, projects) => {
 		// add the project associted with this refund to the refund object
-		refunds.map((refund) => {
+		refunds = refunds.map((refund) => {
 			return({
 				...refund,
 				project: projects.allProjects[refund.id - 1]
 			})
 		})
+		return(refunds)
 	}
 )
 

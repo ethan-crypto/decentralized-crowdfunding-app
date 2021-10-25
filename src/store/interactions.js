@@ -18,7 +18,8 @@ import {
 	allContributionsLoaded,
 	contributionRefunding,
 	contributionRefunded,
-	feePercentLoaded
+	feePercentLoaded,
+	daiBalanceLoaded
 } from './actions'
 import Web3 from 'web3'
 import Dai from '../abis/Dai.json'
@@ -73,6 +74,11 @@ export const loadCrowdfunder = async (web3, networkId, dispatch) => {
 		return null
 	}
 	
+}
+
+export const loadDaiBalance = async (dai, dispatch, account) => {
+	  	const daiBalance = await dai.methods.balanceOf(account).call()
+	  	dispatch(daiBalanceLoaded(daiBalance))
 }
 
 export const loadAllProjects = async(crowdfunder, dispatch) => {

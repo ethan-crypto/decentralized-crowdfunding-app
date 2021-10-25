@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { OverlayTrigger, Tooltip, Tabs, Tab, Popover, PopoverHeader, PopoverBody } from 'react-bootstrap'
+import { OverlayTrigger, Tooltip, Tabs, Tab } from 'react-bootstrap'
 import Spinner from './Spinner'
 import {
   crowdfunderSelector,
@@ -10,8 +10,7 @@ import {
   myHeldContributionsSelector,
   myReleasedContributionsSelector,
   formattedContributionsLoadedSelector,
-  contributionRefundingSelector,
-  contributionSelector
+  contributionRefundingSelector
 } from '../store/selectors'
 import { refundContributions } from '../store/interactions'
 
@@ -64,7 +63,7 @@ const renderMyContributions = (contributions, popover) => {
             >
               <tr 
                 key={contribution.id}
-                className="myContributions-contribution"
+                className="contributions-contribution"
               >
                 <td className={`text-${contribution.project.projectTypeClass}`}>{contribution.project.name}</td>
                 <td>${contribution.formattedFundAmount}</td>
@@ -117,7 +116,6 @@ function mapStateToProps(state) {
   const formattedContributionsLoaded = formattedContributionsLoadedSelector(state)
   const contributionRefunding = contributionRefundingSelector(state)
   const myPendingRefunds = myPendingRefundsSelector(state)
-  const contribution = contributionSelector(state)
   console.log(myPendingRefunds)
   return {
     web3: web3Selector(state),
@@ -126,7 +124,7 @@ function mapStateToProps(state) {
     myPendingRefunds,
     myHeldContributions: myHeldContributionsSelector(state),
     myReleasedContributions: myReleasedContributionsSelector(state),
-    showMyContributions: !contributionRefunding && !contribution.loading && formattedContributionsLoaded,
+    showMyContributions: !contributionRefunding && formattedContributionsLoaded,
     showRefundAllButton: myPendingRefunds.refundTotal > 0
   }
 }
