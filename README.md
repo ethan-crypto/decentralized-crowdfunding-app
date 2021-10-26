@@ -1,5 +1,5 @@
 # decentralized-crowdfunding-app
-A decentralized crowdfunding application named "Make it Happen". It is powered by IPFS and Ethereum smart contracts and uses the DAI stable coin to make transactions.
+A decentralized crowdfunding application named "Make it Happen". It is powered by IPFS and Ethereum smart contracts and interacts with the DAI stable coin.
 
 **Overview of the protocol:**
 
