@@ -1,8 +1,8 @@
 //SPDX-License-Identifier: UNLICENSED
 
-
 pragma solidity ^0.8.0;
 
+import "./Dai.sol";
 import "openzeppelin-solidity/contracts/utils/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 
@@ -70,8 +70,7 @@ contract Crowdfunder {
 		uint256 supporterCount;
 	}
 
-	constructor (address daiAddress, address _feeAccount, uint256 _feePercent) {
-		dai = IERC20(daiAddress);
+	constructor (address _feeAccount, uint256 _feePercent) {
 		feeAccount = _feeAccount;
 		feePercent = _feePercent;
 	}

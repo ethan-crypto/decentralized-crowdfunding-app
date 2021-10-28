@@ -24,7 +24,7 @@ contract('Crowdfunder', ([deployer, feeAccount, user1, user2, user3]) => {
 		dai.faucet(user2, daiToken(100), {from: deployer});
 		dai.faucet(user3, daiToken(100), {from: deployer});
 
-		crowdfunder = await Crowdfunder.new(dai.address, feeAccount, feePercent)
+		crowdfunder = await Crowdfunder.new(feeAccount, feePercent)
 	})
 	
 	describe('deployment', () => {

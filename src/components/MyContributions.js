@@ -116,7 +116,6 @@ function mapStateToProps(state) {
   const formattedContributionsLoaded = formattedContributionsLoadedSelector(state)
   const contributionRefunding = contributionRefundingSelector(state)
   const myPendingRefunds = myPendingRefundsSelector(state)
-  console.log(myPendingRefunds)
   return {
     web3: web3Selector(state),
     crowdfunder: crowdfunderSelector(state),

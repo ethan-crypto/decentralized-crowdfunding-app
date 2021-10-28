@@ -2,6 +2,11 @@ import React, { Component } from 'react'
 import { Field, reduxForm } from 'redux-form'
 import { imageFileCaptured } from '../store/actions'
 
+const wait = (seconds) => {
+  const milliseconds = seconds * 1000
+  return new Promise(resolve => setTimeout(resolve, milliseconds))
+}
+
 const required = value => (value || typeof value === 'number' ? undefined : 'Required')
 const maxDays = max => value => 
 	value && value > max ? `Project must be no more than ${max} days long` : undefined
@@ -47,13 +52,20 @@ const renderTextareaField = ({
 const captureFile = dispatch => event => {
   event.preventDefault()
   const file = event.target.files[0]
-  const reader = new window.FileReader()
-  reader.readAsArrayBuffer(file)
+  console.log(typeof file)
+  if(typeof file !== 'undefined') {
+  	const reader = new window.FileReader()
+  	reader.readAsArrayBuffer(file)
 
-  reader.onloadend = () => {
-    dispatch(imageFileCaptured(Buffer(reader.result))) 
-    console.log(Buffer(reader.result))
+	  reader.onloadend = () => {
+	    dispatch(imageFileCaptured(Buffer(reader.result))) 
+	    console.log(Buffer(reader.result))
+	  }
   }
+  else {
+  	dispatch(imageFileCaptured(null))
+  }
+
 }
 
 
@@ -69,7 +81,7 @@ class createProjectForm extends Component {
 		    <div>
 	        <label>Image</label>
 	        <div>
-	        	<input type='file' accept=".jpg, .jpeg, .png, .bmp, .gif" onChange={captureFile(dispatch)} />
+	        	<input type='file' accept=".jpg, .jpeg, .png, .bmp, .gif, ''" onChange={captureFile(dispatch)} />
 	        </div>
 	      </div>
 	      <Field

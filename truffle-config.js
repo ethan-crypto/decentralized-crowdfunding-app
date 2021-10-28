@@ -1,7 +1,8 @@
 require('babel-register');
 require('babel-polyfill');
 require('dotenv').config();
-require('moment-countdown');
+const HDWalletProvider = require('@truffle/hdwallet-provider');
+const privateKeys = process.env.PRIVATE_KEYS || ""
 
 module.exports = {
   networks: {
@@ -10,10 +11,19 @@ module.exports = {
       port: 7545,
       network_id: "*" // Match any network id
     },
+    kovan: {
+      provider: function() {
+        return new HDWalletProvider(
+          privateKeys.split(','), //Array of account private keys
+          `https://kovan.infura.io/v3/${process.env.INFURA_API_KEY}` //Url to an Ethereum node
+        )
+      },
+      network_id: 42
+    }
   },
   contracts_directory: './src/contracts/',
   contracts_build_directory: './src/abis/',
-  compilers: {
+  compilers: { 
     solc: {
       version: "^0.8.0",
       optimizer: {

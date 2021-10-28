@@ -54,6 +54,8 @@ module.exports = async function(callback) {
 		const name = "Sample Name"
 		const imgHash = 'abc123'
 		const fee = 1.1
+		let result
+		let projectId
 		// User 1 makes project 
 		let description = "I need 100 dai to help fund my new album that I hope to release next month"
 		amount = 100
