@@ -37,7 +37,7 @@ class App extends Component {
   render() {
     return (
       <div>
-        { this.props.daiLoaded ? < Navbar /> : <div className="dai"></div>}
+        { this.props.loadNavbar ? < Navbar /> : <div className="dai"></div>}
         { this.props.contractsLoaded ? <Content /> : <div className="content"></div> }
       </div>
     );
