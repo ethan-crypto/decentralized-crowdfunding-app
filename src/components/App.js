@@ -48,7 +48,7 @@ function mapStateToProps(state) {
   const daiLoaded = daiLoadedSelector(state)
   const account = accountSelector(state)
   return {
-    loadNavbar: account && daiLoaded
+    loadNavbar: account && daiLoaded,
     contractsLoaded: contractsLoadedSelector(state)
   }
 }
