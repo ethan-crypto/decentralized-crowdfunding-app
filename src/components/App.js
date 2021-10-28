@@ -11,7 +11,8 @@ import {
 } from '../store/interactions'
 import { 
   contractsLoadedSelector,
-  daiLoadedSelector
+  daiLoadedSelector,
+  accountSelector
 } from '../store/selectors'
 
 class App extends Component {
@@ -44,8 +45,10 @@ class App extends Component {
 }
 
 function mapStateToProps(state) {
+  const daiLoaded = daiLoadedSelector(state)
+  const account = accountSelector(state)
   return {
-    daiLoaded: daiLoadedSelector(state),
+    loadNavbar: account && daiLoaded
     contractsLoaded: contractsLoadedSelector(state)
   }
 }
