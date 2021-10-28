@@ -2,10 +2,6 @@ import React, { Component } from 'react'
 import { Field, reduxForm } from 'redux-form'
 import { imageFileCaptured } from '../store/actions'
 
-const wait = (seconds) => {
-  const milliseconds = seconds * 1000
-  return new Promise(resolve => setTimeout(resolve, milliseconds))
-}
 
 const required = value => (value || typeof value === 'number' ? undefined : 'Required')
 const maxDays = max => value => 
