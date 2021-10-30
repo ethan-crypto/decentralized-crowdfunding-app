@@ -104,7 +104,7 @@ contract Crowdfunder {
 
 	function cancelProject(uint256 _id) onlyValidIds(_id) external {
 		_Project storage _project = projects[_id];
-		require(IsOpen(_project.fundGoal, _project.timestamp), 'Error, project must be open');
+		require(IsOpen(_project.timeGoal, _project.timestamp), 'Error, project must be open');
 		require(address(_project.creator) == msg.sender, 'Error, only creator can cancel their project');
 		projectCancelled[_id] = true;
 		emit Cancel(_project.id, msg.sender, _project.fundGoal, _project.timeGoal, block.timestamp);
