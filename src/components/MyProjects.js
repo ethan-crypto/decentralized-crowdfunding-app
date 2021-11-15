@@ -63,16 +63,18 @@ const renderButton = (project, props) => {
 
 
 const renderMyProjects = (props, projects) => {
-  projects.map((project, key) => {
-    return(
-      <div className ="card mb-4" key={key} >
-        <ul id="imageList" className="list-group list-group-flush">
-          {props.renderContent(project)}
-          {project.status === "OPEN" || "PENDING_DISBURSEMENT" ? renderButton(project, props) : null}
-        </ul>
-      </div>      
-    )
-  })
+  return (
+    projects.map((project, key) => {
+      return (
+        <div className="card mb-4" key={key} >
+          <ul id="imageList" className="list-group list-group-flush">
+            {props.renderContent(project)}
+            {project.status === "OPEN" || "PENDING_DISBURSEMENT" ? renderButton(project, props) : null}
+          </ul>
+        </div>
+      )
+    })
+  )
 }
 
 function renderMyProjectsContent(props, selectedKey) {
@@ -108,13 +110,14 @@ function renderMyProjectsContent(props, selectedKey) {
 
 const showNavbar = props => {
   let event = "myProjects"
+  console.log(event)
   return (
     <>
       <div>
         <Nav 
           variant="tabs" 
           defaultActiveKey="myProjects"
-          onSelect={(selectedKey) =>  }
+          onSelect={(selectedKey) =>  event = selectedKey}
         >
           <NavDropdown title="View" id="nav-dropdown">
             <NavDropdown.Item eventKey="myProjects">All</NavDropdown.Item>
@@ -136,8 +139,14 @@ const showNavbar = props => {
 }
 
 class MyProjects extends Component {
-  componentDidMount(){
+  componentDidMount() {
     this.loadBlockchainData()
+  }
+  constructor(props) {
+    super(props)
+    this.state = {
+      navSelection: 'myProjects'
+    }
   }
 
   async loadBlockchainData() {
@@ -145,13 +154,39 @@ class MyProjects extends Component {
     await loadFeePercent(dispatch, web3, crowdfunder, account)
   }
   render() {
+    console.log(this.props.myProjects)
     return (
       <div className="card bg-dark text-white">
         <div className="card-header">
           My Projects
         </div>
         <div className="card-body">
-        { this.props.showNavbar ? showNavbar(this.props) : <Spinner />}
+          {this.props.showNavbar
+            ?
+            <>
+              <div>
+                <Nav
+                  variant="tabs"
+                  defaultActiveKey="myProjects"
+                  onSelect={(selectedKey) => this.setState(prevState => ({navSelection: selectedKey}))}
+                >
+                  <NavDropdown title="View" id="nav-dropdown">
+                    <NavDropdown.Item eventKey="myProjects">All</NavDropdown.Item>
+                    <NavDropdown.Divider />
+                    <NavDropdown.Item eventKey="myPendingDisbursements">Pending Disbursement</NavDropdown.Item>
+                    <NavDropdown.Item eventKey="myOpenProjects">Open</NavDropdown.Item>
+                    <NavDropdown.Item eventKey="myClosedProjects">Closed</NavDropdown.Item>
+                  </NavDropdown>
+                  <Nav.Item>
+                    <Nav.Link eventKey="New">New</Nav.Link>
+                  </Nav.Item>
+                </Nav>
+              </div>
+              <div>
+              {renderMyProjectsContent(this.props, this.state.navSelection)}
+              </div>
+            </>
+            : <Spinner />}
         </div>
       </div>
     )
