@@ -1,0 +1,184 @@
+import React, { Component } from 'react'
+import { connect } from 'react-redux'
+import { Tabs, Tab, OverlayTrigger, Tooltip, Nav, NavDropdown } from 'react-bootstrap'
+import Spinner from './Spinner'
+import { 
+  crowdfunderSelector,
+  daiSelector,
+  accountSelector,
+  web3Selector,
+  myProjectsSelector,
+  myPendingDisbursementsSelector,
+  myOpenProjectsSelector,
+  myClosedProjectsSelector,
+  formattedProjectsLoadedSelector,
+  projectFundsTransferingSelector,
+  projectCancellingSelector,
+  feePercentSelector,
+  projectMakingSelector,
+  bufferSelector
+} from '../store/selectors'
+import { 
+  cancelProject,
+  disburseProjectFunds,
+  loadFeePercent,
+  makeProject
+} from '../store/interactions'
+import CreateProjectForm from './CreateProjectForm'
+
+const renderCancelButton = (id, props) => {
+  return(
+    <li key={id} className="list-group-item py-2"> 
+      <button
+        className="btn btn-link btn-sm float-right pt-0"
+        name={id}
+        onClick={(event) => {
+          console.log(event.target.name)
+          cancelProject(props.dispatch, props.web3, props.account, event.target.name, props.crowdfunder)
+        }}
+      >
+        Cancel Project
+      </button> 
+    </li>
+  )  
+}
+
+const renderButton = (project, props) => {
+  return(
+    <li key={project.id} className="list-group-item py-2"> 
+      <button
+        className="btn btn-link btn-sm float-right pt-0"
+        name={project.id}
+        onClick={(event) => {
+          project.status === "OPEN" 
+          ? cancelProject(props.dispatch, props.web3, props.account, event.target.name, props.crowdfunder)
+          : disburseProjectFunds(props.dispatch, props.web3, props.account, event.target.name, props.crowdfunder) 
+        }}
+      >
+        Cancel Project
+      </button> 
+    </li>
+  )  
+}
+
+
+const renderMyProjects = (props, projects) => {
+  projects.map((project, key) => {
+    return(
+      <div className ="card mb-4" key={key} >
+        <ul id="imageList" className="list-group list-group-flush">
+          {props.renderContent(project)}
+          {project.status === "OPEN" || "PENDING_DISBURSEMENT" ? renderButton(project, props) : null}
+        </ul>
+      </div>      
+    )
+  })
+}
+
+function renderMyProjectsContent(props, selectedKey) {
+  const {
+    dispatch,
+    web3,
+    buffer,
+    account,
+    crowdfunder
+  } = props
+
+  switch(selectedKey) {
+    case 'myProjects':
+      return renderMyProjects(props, props.myProjects)
+    case 'myPendingDisbursements':
+      return renderMyProjects(props, props.myPendingDisbursements)
+    case 'myOpenProjects':
+      return renderMyProjects(props, props.myOpenProjects)
+    case 'myClosedProjects':
+      return renderMyProjects(props, props.myClosedProjects)
+    case 'New':
+      return (
+        <CreateProjectForm 
+          dispatch={dispatch}
+          onSubmit= { 
+          (project) => { makeProject(dispatch, web3, project, buffer, account, crowdfunder) }
+          } 
+         />)
+    default:
+      return renderMyProjects(props, props.myProjects)
+  }
+}
+
+const showNavbar = props => {
+  let event = "myProjects"
+  return (
+    <>
+      <div>
+        <Nav 
+          variant="tabs" 
+          defaultActiveKey="myProjects"
+          onSelect={(selectedKey) =>  }
+        >
+          <NavDropdown title="View" id="nav-dropdown">
+            <NavDropdown.Item eventKey="myProjects">All</NavDropdown.Item>
+            <NavDropdown.Divider />
+            <NavDropdown.Item eventKey="myPendingDisbursements">Pending Disbursement</NavDropdown.Item>
+            <NavDropdown.Item eventKey="myOpenProjects">Open</NavDropdown.Item>
+            <NavDropdown.Item eventKey="myClosedProjects">Closed</NavDropdown.Item>
+          </NavDropdown>
+          <Nav.Item>
+            <Nav.Link eventKey="New">New</Nav.Link>
+          </Nav.Item>
+        </Nav>
+      </div>
+      <div>
+        {renderMyProjectsContent(props, event)}
+      </div>
+    </>
+  )
+}
+
+class MyProjects extends Component {
+  componentDidMount(){
+    this.loadBlockchainData()
+  }
+
+  async loadBlockchainData() {
+    const { dispatch, web3, crowdfunder, account } = this.props
+    await loadFeePercent(dispatch, web3, crowdfunder, account)
+  }
+  render() {
+    return (
+      <div className="card bg-dark text-white">
+        <div className="card-header">
+          My Projects
+        </div>
+        <div className="card-body">
+        { this.props.showNavbar ? showNavbar(this.props) : <Spinner />}
+        </div>
+      </div>
+    )
+  }
+}
+
+
+
+function mapStateToProps(state) {
+  const formattedProjectsLoaded = formattedProjectsLoadedSelector(state)
+  const projectFundsTransfering = projectFundsTransferingSelector(state)
+  const projectCancelling = projectCancellingSelector(state)
+  const feePercent = feePercentSelector(state)
+  const projectMaking = projectMakingSelector(state)
+  return {
+    web3: web3Selector(state),
+    crowdfunder: crowdfunderSelector(state),
+    dai: daiSelector(state),
+    account: accountSelector(state),
+    myProjects: myProjectsSelector(state),
+    myPendingDisbursements: myPendingDisbursementsSelector(state),
+    myOpenProjects: myOpenProjectsSelector(state),
+    myClosedProjects: myClosedProjectsSelector(state),
+    showNavbar: formattedProjectsLoaded && !projectFundsTransfering && !projectCancelling && !projectMaking,
+    feePercent,
+    buffer: bufferSelector(state)
+  }
+}
+
+export default connect(mapStateToProps)(MyProjects)
