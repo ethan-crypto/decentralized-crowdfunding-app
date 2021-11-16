@@ -1,7 +1,7 @@
 const Web3 = require('web3') 	
 const web3 = new Web3(new Web3.providers.HttpProvider('http://127.0.0.1:7545'))
 import { daiToken, EVM_REVERT, futureTime} from './helpers'
-const { expectRevert, constants, time } = require('@openzeppelin/test-helpers')
+const { expectRevert, time } = require('@openzeppelin/test-helpers')
 const Crowdfunder = artifacts.require("Crowdfunder")
 const Project = artifacts.require("Project")
 // Using a MockDai token for testing purposes exclusively. The front end of my application will use the actual DaiToken smart contract address via ganache CLI.  

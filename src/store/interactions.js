@@ -25,7 +25,6 @@ import {
 import Web3 from 'web3'
 import MockDai from '../abis/MockDai.json'
 import Crowdfunder from '../abis/Crowdfunder.json'
-import Project from '../abis/Project.json'
 
 //Declare IPFS
 const { create } = require('ipfs-http-client')

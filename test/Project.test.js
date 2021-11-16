@@ -1,7 +1,7 @@
+import { daiToken, futureTime} from './helpers'
+const { expectRevert, time } = require('@openzeppelin/test-helpers')
 const Project = artifacts.require("Project")
 const Crowdfunder = artifacts.require("Crowdfunder")
-import { daiToken, EVM_REVERT, futureTime} from './helpers'
-const { expectRevert, time } = require('@openzeppelin/test-helpers')
 const MockDai = artifacts.require("MockDai") 
 
 require('chai')
@@ -11,7 +11,7 @@ require('chai')
 //Not testing this contracts functions since the crowdundingplatform contract makes use of each of these functions directly.
 //Only testing the "onlyParentContract" modifier thats applied to all the external functions in the contract. 
 
-contract("Project", ([user1, user2]) => {
+contract("Project", ([user1]) => {
 	let project, crowdfunder, dai, projectAddress, timeGoal
 	const onlyParentContract = 'Error, only parent contract can interact with this contract'
 	const THIRTY_DAYS = +time.duration.days(30)
