@@ -10,9 +10,7 @@ import {
  } from '../store/selectors'
 import { 
   loadAllCrowdfunderData, 
-  loadAllRefunds,
   subscribeToEvents,
-  loadAllContributions
 } from '../store/interactions'
 
 const renderProjectPopover = project => {
@@ -112,9 +110,7 @@ class Content extends Component {
   }
   async loadBlockchainData(props) {
     const { dispatch, crowdfunder } = props
-    await loadAllContributions(crowdfunder, dispatch)
     await loadAllCrowdfunderData(crowdfunder, dispatch)
-    await loadAllRefunds(crowdfunder, dispatch)
     await subscribeToEvents(crowdfunder, dispatch)
   }
 
