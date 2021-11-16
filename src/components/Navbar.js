@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
+import { Navbar, Container, Nav } from 'react-bootstrap'
 import { 
   accountSelector,
   daiSelector,
@@ -7,7 +8,19 @@ import {
 } from '../store/selectors'
 import { loadDaiBalance } from '../store/interactions'
 
-class Navbar extends Component {
+<Navbar>
+  <Container>
+    <Navbar.Brand href="#home">Navbar with text</Navbar.Brand>
+    <Navbar.Toggle />
+    <Navbar.Collapse className="justify-content-end">
+      <Navbar.Text>
+        Signed in as: <a href="#login">Mark Otto</a>
+      </Navbar.Text>
+    </Navbar.Collapse>
+  </Container>
+</Navbar>
+
+class AppNavbar extends Component {
   componentDidMount() {
     this.loadBlockchainData(this.props)
   }
@@ -17,34 +30,24 @@ class Navbar extends Component {
   }
   render() {
     return (
-      <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
-        <a className="navbar-brand" href="#/">Make It Happen</a>
-        <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-          <span className="navbar-toggler-icon"></span>
-        </button>
-        <ul className="navbar-nav ml-auto">
-          <li className="nav-item">
-            <a
-              className="nav-link small"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {this.props.account}
-            </a>
-          </li>
-          <li className="nav-item">
-            <a
-              className="nav-link small"
-              href= "https://oasis.app/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-             DAI Balance:<strong> ${this.props.daiBalance} </strong>
-            </a>
-
-          </li>
-        </ul>
-      </nav>
+      < Navbar bg="primary" expand = "lg" className= "navbar-dark">
+        <Container fluid>
+          <Navbar.Brand href="#/">Make It Happen</Navbar.Brand>
+          <Navbar.Toggle />
+          <Navbar.Collapse className="justify-content-end navbar-dark">
+            <Nav className ="me-auto">
+              <Nav.Link variant="navbar-dark" href="https://oasis.app/">
+                DAI Balance:<strong> ${this.props.daiBalance} </strong>
+              </Nav.Link>
+            </Nav> 
+            <Nav>
+              <Nav.Link href={`https://etherscan.io/address/${this.props.account}`}>
+                {this.props.account}
+              </Nav.Link>
+            </Nav>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
     )
   }
 }
@@ -57,4 +60,4 @@ function mapStateToProps(state) {
   }
 }
 
-export default connect(mapStateToProps)(Navbar)
+export default connect(mapStateToProps)(AppNavbar)
