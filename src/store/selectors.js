@@ -123,9 +123,9 @@ const formatProject = (project, successful, cancelled, allRefunds) => {
 			...project,
 			status: "SUCCEEDED",
 			projectTypeClass: GREEN,
-			feeAmount: formatFunds(successfulProject.transferAmount),
-			transferAmount: formatFunds(successfulProject.transferAmount), 
-			transferedDate: moment.unix(successfulProject.timestamp).format('M/D/YYYY h:mm:ss a')
+			feeAmount: formatFunds(successfulProject.feeAmount),
+			disburseAmount: formatFunds(successfulProject.disburseAmount), 
+			disbursedDate: moment.unix(successfulProject.timestamp).format('M/D/YYYY h:mm:ss a')
 		}
 	}
 	else {

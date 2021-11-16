@@ -111,9 +111,9 @@ const renderTransfers = (projects, popover) => {
                 className="transfers-transfer"
               >
                 <td className={`text-${project.projectTypeClass}`}>{project.name}</td>
-                <td>${project.transferAmount}</td>
-                <td>{project.feeAmount}</td>
-                <td className="text-muted">{project.transferedDate}</td>
+                <td>${project.disburseAmount}</td>
+                <td>${project.feeAmount}</td>
+                <td className="text-muted">{project.disbursedDate}</td>
               </tr>
             </OverlayTrigger>
           )

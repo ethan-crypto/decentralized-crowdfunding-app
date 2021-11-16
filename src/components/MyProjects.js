@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { Tabs, Tab, OverlayTrigger, Tooltip, Nav, NavDropdown } from 'react-bootstrap'
+import { Nav, NavDropdown } from 'react-bootstrap'
 import Spinner from './Spinner'
 import { 
   crowdfunderSelector,
@@ -44,18 +44,19 @@ const renderCancelButton = (id, props) => {
 }
 
 const renderButton = (project, props) => {
+  const isOpen = project.status === "OPEN"
   return(
     <li key={project.id} className="list-group-item py-2"> 
       <button
         className="btn btn-link btn-sm float-right pt-0"
         name={project.id}
         onClick={(event) => {
-          project.status === "OPEN" 
+          isOpen
           ? cancelProject(props.dispatch, props.web3, props.account, event.target.name, props.crowdfunder)
           : disburseProjectFunds(props.dispatch, props.web3, props.account, event.target.name, props.crowdfunder) 
         }}
       >
-        Cancel Project
+        {isOpen ? "Cancel Project" : "Disburse Project Funds" }
       </button> 
     </li>
   )  
@@ -69,7 +70,7 @@ const renderMyProjects = (props, projects) => {
         <div className="card mb-4" key={key} >
           <ul id="imageList" className="list-group list-group-flush">
             {props.renderContent(project)}
-            {project.status === "OPEN" || "PENDING_DISBURSEMENT" ? renderButton(project, props) : null}
+            {project.status === "OPEN" || project.status == "PENDING_DISBURSEMENT" ? renderButton(project, props) : null}
           </ul>
         </div>
       )
