@@ -85,7 +85,7 @@ const renderContributions = (contributions, popover) => {
   )
 }
 
-const renderTransfers = (projects, popover) => {
+const renderDisburesements = (projects, popover) => {
   return (
     <table className="table table-dark table-sm small">
       <thead>
@@ -108,7 +108,7 @@ const renderTransfers = (projects, popover) => {
             >
               <tr 
                 key={project.id}
-                className="transfers-transfer"
+                className="disburesements-transfer"
               >
                 <td className={`text-${project.projectTypeClass}`}>{project.name}</td>
                 <td>${project.disburseAmount}</td>
@@ -126,9 +126,9 @@ const renderTransfers = (projects, popover) => {
 
 const showTransactions = props => {
   return(
-    <Tabs defaultActiveKey="transfers" className="bg-dark text-white">
-      <Tab eventKey="transfers" title="Transfers">
-        { renderTransfers(props.disbursements, props.renderProjectPopover)}
+    <Tabs defaultActiveKey="disburesements" className="bg-dark text-white">
+      <Tab eventKey="disburesements" title="Disburesements">
+        { renderDisburesements(props.disbursements, props.renderProjectPopover)}
       </Tab>
       <Tab eventKey="contributions" title="Contributions">
         { renderContributions(props.contributions, props.renderProjectPopover)}

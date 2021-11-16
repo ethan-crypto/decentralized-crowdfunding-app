@@ -70,7 +70,7 @@ const renderMyProjects = (props, projects) => {
         <div className="card mb-4" key={key} >
           <ul id="imageList" className="list-group list-group-flush">
             {props.renderContent(project)}
-            {project.status === "OPEN" || "PENDING_DISBURSEMENT" ? renderButton(project, props) : null}
+            {project.status === "OPEN" || project.status === "PENDING_DISBURSEMENT" ? renderButton(project, props) : null}
           </ul>
         </div>
       )
