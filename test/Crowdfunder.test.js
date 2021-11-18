@@ -1,5 +1,5 @@
 const Web3 = require('web3') 	
-const web3 = new Web3(new Web3.providers.HttpProvider('http://127.0.0.1:7545'))
+const web3 = new Web3(new Web3.providers.HttpProvider('http://127.0.0.1:8545'))
 import { daiToken, EVM_REVERT, futureTime} from './helpers'
 const { expectRevert, time } = require('@openzeppelin/test-helpers')
 const Crowdfunder = artifacts.require("Crowdfunder")
@@ -38,6 +38,10 @@ contract('Crowdfunder', ([deployer, feeAccount, user1, user2, user3]) => {
 		it('tracks the feePercent', async () => {
 			const result = await crowdfunder.feePercent()
 			result.toString().should.equal(feePercent.toString())
+		})
+		it('tracks the dai address', async () => {
+			const result = await crowdfunder.dai()
+			result.toString().should.equal(dai.address.toString())
 		})
 	})
 

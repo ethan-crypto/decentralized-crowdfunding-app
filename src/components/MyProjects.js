@@ -109,35 +109,7 @@ function renderMyProjectsContent(props, selectedKey) {
   }
 }
 
-const showNavbar = props => {
-  let event = "myProjects"
-  console.log(event)
-  return (
-    <>
-      <div>
-        <Nav 
-          variant="tabs" 
-          defaultActiveKey="myProjects"
-          onSelect={(selectedKey) =>  event = selectedKey}
-        >
-          <NavDropdown title="View" id="nav-dropdown">
-            <NavDropdown.Item eventKey="myProjects">All</NavDropdown.Item>
-            <NavDropdown.Divider />
-            <NavDropdown.Item eventKey="myPendingDisbursements">Pending Disbursement</NavDropdown.Item>
-            <NavDropdown.Item eventKey="myOpenProjects">Open</NavDropdown.Item>
-            <NavDropdown.Item eventKey="myClosedProjects">Closed</NavDropdown.Item>
-          </NavDropdown>
-          <Nav.Item>
-            <Nav.Link eventKey="New">New</Nav.Link>
-          </Nav.Item>
-        </Nav>
-      </div>
-      <div>
-        {renderMyProjectsContent(props, event)}
-      </div>
-    </>
-  )
-}
+
 
 class MyProjects extends Component {
   componentDidMount() {
