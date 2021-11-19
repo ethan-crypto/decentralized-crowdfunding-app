@@ -102,7 +102,7 @@ contract("Swap",([deployer, user1]) => {
                 maxEthAmountIn = 1.1*(quotedEthAmountIn)
                 console.log(`Max ETH amount input is ${fromWei(maxEthAmountIn)}, which is equal to 110% of the quoted ETH amount input`)
                 // user1 approves swap contract to spend their Dai
-                result = await swap.convertEthToExactDai(daiAmountOut, futureTime(500), {from : user1, value: maxEthAmountIn})
+                result = await swap.convertEthToExactDai(daiAmountOut, futureTime(15), {from : user1, value: maxEthAmountIn})
             })
             it("emits a Converted event", async() => {
                 const log = result.logs[0]
@@ -132,6 +132,18 @@ contract("Swap",([deployer, user1]) => {
                 newDaiBalance.toString().should.eq((+daiBalance.toString()+ +daiAmountOut.toString()).toString())
                 console.log(`DAI balance after swap: ${fromWei(newDaiBalance)}`)
             })
+        })
+        describe("failure", () => {
+            it("It rejects when dai amount or eth amount equals to zero", () => {
+                expectRevert(
+                    swap.convertEthToExactDai('0', futureTime(15), {from : user1, value: toWei(1)}),
+                    "Error, DAI amount out must be greater than 0"
+                );
+                expectRevert(
+                    swap.convertEthToExactDai(toWei(30), futureTime(15), {from : user1, value: '0'}),
+                    "Error, ETH amount must be greater than 0"
+                );
+            })  
         })
     })
 })
