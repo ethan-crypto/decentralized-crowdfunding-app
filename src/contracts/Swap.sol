@@ -47,23 +47,17 @@ contract Swap {
     function convertEthToExactDai(uint256 _daiAmountOut, uint256 _deadline) external payable {
         require(_daiAmountOut > 0, "Error, DAI amount out must be greater than 0");
         require(msg.value > 0, "Error, ETH amount must be greater than 0");
-        address _tokenIn = weth;
-        address _tokenOut = dai;
-        uint24 _fee = poolFee;
-        address _recipient = msg.sender;
-        uint256 _amountInMaximum = msg.value;
-        uint160 _sqrtPriceLimitX96 = 0;
         ISwapRouter.ExactOutputSingleParams memory params =
-            ISwapRouter.ExactOutputSingleParams(
-                _tokenIn,
-                _tokenOut,
-                _fee,
-                _recipient,
-                _deadline,
-                _daiAmountOut,
-                _amountInMaximum,
-                _sqrtPriceLimitX96
-            );
+            ISwapRouter.ExactOutputSingleParams({
+                tokenIn: weth,
+                tokenOut: dai,
+                fee: poolFee,
+                recipient: msg.sender,
+                deadline: _deadline,
+                amountOut: _daiAmountOut,
+                amountInMaximum: msg.value,
+                sqrtPriceLimitX96: 0
+            });
 
         uint256 _amountIn = swapRouter.exactOutputSingle{value: msg.value}(params);
         swapRouter.refundETH();
