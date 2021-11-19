@@ -92,15 +92,15 @@ contract("Swap",([deployer, user1]) => {
                 console.log(`start ETH balance: ${fromWei(ethBalance)}`)
     
                 daiBalance = await daiRef.methods.balanceOf(user1).call()
-                console.log(`start DAI balance: ${fromWei(ethBalance)}`)
+                console.log(`start DAI balance: ${fromWei(daiBalance)}`)
                 //Quote about how much Eth is needed to get an exact amount of Dai
                 quotedEthAmountIn = await swapRef.methods.getEthInputAmount(daiAmountOut).call()
-                console.log(`The quoted ETH amount in for an exact DAI output of ${fromWei(daiAmountOut)} is ${fromWei(quotedEthAmountIn)}`)
+                console.log(`The quoted ETH amount input for an exact DAI output of ${fromWei(daiAmountOut)} is ${fromWei(quotedEthAmountIn)}`)
                 // Use that quoted amount to determine the max amount of ether to send with the convertEthToExactDai function
                 // Will send 110% of the quoted amount to ensure the transaction goes through 
                 // The ether thats left over after the swap has been executed will be sent back to the user
                 maxEthAmountIn = 1.1*(quotedEthAmountIn)
-                console.log(`Max ETH amount input is ${maxEthAmountIn}, which is equal to 110% of the quoted ETH amout in`)
+                console.log(`Max ETH amount input is ${fromWei(maxEthAmountIn)}, which is equal to 110% of the quoted ETH amount input`)
                 // user1 approves swap contract to spend their Dai
                 result = await swap.convertEthToExactDai(daiAmountOut, futureTime(500), {from : user1, value: maxEthAmountIn})
             })
