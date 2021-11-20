@@ -1,27 +1,16 @@
 const { time } = require('@openzeppelin/test-helpers')
-const MockDai = artifacts.require("MockDai");
+const Swap = artifacts.require("Swap");
 const Crowdfunder = artifacts.require("Crowdfunder");
-// Utils
-const daiToken = (n) => {
-  return new web3.utils.BN(
-    web3.utils.toWei(n.toString(), 'ether')
-  )
-}
+const IERC20 = artifacts.require("IERC20")
+import { futureTime, wait, fromWei, toWei, daiToken, mainnetDai, mainnetWeth } from '../src/helpers'
 
 const THIRTY_DAYS = time.duration.days(30)
 const FOURTEEN_DAYS = time.duration.days(14)
-const futureTime = (seconds) => {
-  return (+Math.floor(new Date().getTime()/1000.0) + +seconds)
-} 
 
 const daysAhead = (days) => {
 	return (futureTime(days*86400))
 }
 
-const wait = (seconds) => {
-  const milliseconds = seconds * 1000
-  return new Promise(resolve => setTimeout(resolve, milliseconds))
-}
 
 module.exports = async function(callback) {
 	try {
@@ -32,9 +21,9 @@ module.exports = async function(callback) {
 		const crowdfunder = await Crowdfunder.deployed()
 		console.log('Crowdfunder fetched', crowdfunder.address)
 
-		// Fetch the deployed dai
-		const dai = await MockDai.deployed()
-		console.log('MockDai fetched', dai.address)
+		// Fetch the deployed swap
+		const swap = await Swap.deployed()
+		console.log('Swap fetched', swap.address)
 
 		// Deployer mints 10000 dai to give to each of the first three account
 		const deployer = accounts[0]

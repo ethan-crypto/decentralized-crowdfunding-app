@@ -85,7 +85,7 @@ contract Project {
 	}
 
 	function cancel(address _user) onlyParentContract external returns(uint256, uint256, uint256) {
-		require(isOpen(), 'Error, crowdfund must be open');
+		require(isOpen(), 'Error, project must be open');
 		require(callerIsCreator(_user), 'Error, only creator can cancel their project');
 		cancelled = true;
 		emit Cancel(_user, fundGoal, timeGoal, block.timestamp);

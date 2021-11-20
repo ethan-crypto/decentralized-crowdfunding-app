@@ -24,6 +24,7 @@ import {
 } from './actions'
 import Web3 from 'web3'
 import MockDai from '../abis/MockDai.json'
+import Swap from '../abis/Swap.json'
 import Crowdfunder from '../abis/Crowdfunder.json'
 
 //Declare IPFS

@@ -1,11 +1,12 @@
 const Web3 = require('web3') 	
 const web3 = new Web3(new Web3.providers.HttpProvider('http://127.0.0.1:8545'))
-import { daiToken, EVM_REVERT, futureTime} from './helpers'
+import { expect } from 'chai'
+import { EVM_REVERT, futureTime, mainnetDai, mainnetWeth, toWei, wait } from '../src/helpers'
 const { expectRevert, time } = require('@openzeppelin/test-helpers')
 const Crowdfunder = artifacts.require("Crowdfunder")
 const Project = artifacts.require("Project")
-// Using a MockDai token for testing purposes exclusively. The front end of my application will use the actual DaiToken smart contract address via ganache CLI.  
-const MockDai = artifacts.require("MockDai") 
+const IERC20 = artifacts.require("IERC20")
+const Swap = artifacts.require("Swap")
 
 require('chai')
 	.use(require('chai-as-promised'))
@@ -18,16 +19,17 @@ contract('Crowdfunder', ([deployer, feeAccount, user1, user2, user3]) => {
 	const imgHash = 'abc123'
 	const THIRTY_DAYS = +time.duration.days(30)
 	const SIXTY_DAYS = +time.duration.days(60)
-	let crowdfunder, dai
+	let crowdfunder, dai, swap
 	let timeIncrease = 0
 	beforeEach(async() => {
-		dai = await MockDai.new()
+		swap = await Swap.new(mainnetDai, mainnetWeth)
 
-		dai.faucet(user1, daiToken(100), {from: deployer});
-		dai.faucet(user2, daiToken(100), {from: deployer});
-		dai.faucet(user3, daiToken(100), {from: deployer});
-
-		crowdfunder = await Crowdfunder.new(dai.address, feeAccount, feePercent)
+		swap.convertEthToExactDai(toWei(100),futureTime(15+timeIncrease), {value: toWei(0.3), from: user1});
+		swap.convertEthToExactDai(toWei(100),futureTime(15+timeIncrease), {value: toWei(0.3), from: user2});
+		swap.convertEthToExactDai(toWei(100),futureTime(15+timeIncrease), {value: toWei(0.3), from: user3});
+		
+		dai = new web3.eth.Contract(IERC20.abi, mainnetDai)
+		crowdfunder = await Crowdfunder.new(mainnetDai, feeAccount, feePercent)
 	})
 	
 	describe('deployment', () => {
@@ -41,7 +43,7 @@ contract('Crowdfunder', ([deployer, feeAccount, user1, user2, user3]) => {
 		})
 		it('tracks the dai address', async () => {
 			const result = await crowdfunder.dai()
-			result.toString().should.equal(dai.address.toString())
+			result.toString().should.equal(mainnetDai.toString())
 		})
 	})
 
@@ -57,7 +59,7 @@ contract('Crowdfunder', ([deployer, feeAccount, user1, user2, user3]) => {
 		describe('success', () => {
 			beforeEach(async() => {
 				timeGoal = futureTime(THIRTY_DAYS)
-				result = await crowdfunder.makeProject(name, description, imgHash, daiToken(10), timeGoal, { from: user1 })
+				result = await crowdfunder.makeProject(name, description, imgHash, toWei(10), timeGoal, { from: user1 })
 				
 			})
 
@@ -75,13 +77,13 @@ contract('Crowdfunder', ([deployer, feeAccount, user1, user2, user3]) => {
 				const creator = await project.methods.creator().call()
 				creator.should.equal(user1, 'creator is incorrect')
 				const fundGoal = await project.methods.fundGoal().call()
-				fundGoal.toString().should.equal(daiToken(10).toString(), 'fundGoal is incorrect')
+				fundGoal.toString().should.equal(toWei(10).toString(), 'fundGoal is incorrect')
 				const timeGoal = await project.methods.timeGoal().call()
 				timeGoal.toString().should.equal(timeGoal.toString(), 'timeGoal is incorrect')
 				const timestamp = await project.methods.timestamp().call()
 				timestamp.toString().length.should.be.at.least(1, 'timestamp is not present')
 				const daiAddress = await project.methods.dai().call()	
-				daiAddress.should.equal(dai.address, 'dai address is incorrect')		
+				daiAddress.should.equal(mainnetDai, 'dai address is incorrect')		
 			})
 			it('emits a "ProjectMade" event', () => {
 				const log = result.logs[0]
@@ -92,7 +94,7 @@ contract('Crowdfunder', ([deployer, feeAccount, user1, user2, user3]) => {
 				event.description.should.equal(description, 'description is incorrect')
 				event.imgHash.should.equal(imgHash, 'image hash is incorrect')
 				event.creator.should.equal(user1, 'user is incorrect')
-				event.fundGoal.toString().should.equal(daiToken(10).toString(), 'fundGoal is incorrect')
+				event.fundGoal.toString().should.equal(toWei(10).toString(), 'fundGoal is incorrect')
 				event.timeGoal.toString().should.equal(timeGoal.toString(), 'timeGoal is incorrect')
 				event.timestamp.toString().length.should.be.at.least(1, 'timestamp is not present')
 			})
@@ -101,23 +103,23 @@ contract('Crowdfunder', ([deployer, feeAccount, user1, user2, user3]) => {
 			timeGoal = futureTime(THIRTY_DAYS)
 			it('rejects non existent name, description, image hash and time goals that are greater than 60 days or equal to zero', () => {
 				expectRevert(
-					crowdfunder.makeProject(name, description, imgHash, daiToken(10), 0, { from: user1}), 
+					crowdfunder.makeProject(name, description, imgHash, toWei(10), 0, { from: user1}), 
 					'Error, time goal must exist in the future'
 				);
 				expectRevert(
-					crowdfunder.makeProject(name, description, imgHash, daiToken(10), futureTime(SIXTY_DAYS+1), { from: user1}), 
+					crowdfunder.makeProject(name, description, imgHash, toWei(10), futureTime(SIXTY_DAYS+1), { from: user1}), 
 					'Error, time goal must be less than 60 days'
 				);
 				expectRevert(
-					crowdfunder.makeProject('', description, imgHash, daiToken(10), timeGoal, { from: user1}), 
+					crowdfunder.makeProject('', description, imgHash, toWei(10), timeGoal, { from: user1}), 
 					'Error, name must exist'
 				);
 				expectRevert(
-					crowdfunder.makeProject(name, '', imgHash, daiToken(10), timeGoal, { from: user1}), 
+					crowdfunder.makeProject(name, '', imgHash, toWei(10), timeGoal, { from: user1}), 
 					'Error, description must exist'
 				);
 				expectRevert(
-					crowdfunder.makeProject(name, description, '', daiToken(10), timeGoal, { from: user1}), 
+					crowdfunder.makeProject(name, description, '', toWei(10), timeGoal, { from: user1}), 
 					'Error, image hash must exist'
 				);
 			})
@@ -125,42 +127,46 @@ contract('Crowdfunder', ([deployer, feeAccount, user1, user2, user3]) => {
 	})
 
 	describe('funding projects', () => {
-		let result, timeGoal, projectAddress, project
+		let result, timeGoal, projectAddress, project, user2DaiBalance, user3DaiBalance
 		beforeEach(async () => {
+			// user 1 and user 2 starting Dai balance
+			user2DaiBalance = await dai.methods.balanceOf(user2).call()
+			user3DaiBalance = await dai.methods.balanceOf(user3).call()
+			
 			timeGoal = futureTime(THIRTY_DAYS + timeIncrease)
 			// user1 makes project
-			await crowdfunder.makeProject(name, description, imgHash, daiToken(10), timeGoal , {from: user1})
+			await crowdfunder.makeProject(name, description, imgHash, toWei(10), timeGoal , {from: user1})
 			projectAddress = await crowdfunder.projects('1')
 			// approve project to spend user2 daiToken
-			await dai.approve(projectAddress, daiToken(1), {from: user2})
+			await dai.methods.approve(projectAddress, toWei(1)).send({from: user2})
 			// user2 funds project
-			await crowdfunder.contribute('1', daiToken(1), {from: user2})
+			await crowdfunder.contribute('1', toWei(1), {from: user2})
 			// approve crowdfunder to spend user3 daiToken
-			await dai.approve(projectAddress, daiToken(2), {from: user3})
+			await dai.methods.approve(projectAddress, toWei(2)).send({from: user3})
 			//user3 funds project
-			result = await crowdfunder.contribute('1', daiToken(2), {from: user3})
+			result = await crowdfunder.contribute('1', toWei(2), {from: user3})
 		})
 		describe('success', () => {
 			let amount
 			it('tracks supporter funds and total funds', async() => {
 				let supporterFunds
 				// Check user 2 token balance
-				amount = await dai.balanceOf(user2);
-				amount.toString().should.equal(daiToken(99).toString())
+				amount = await dai.methods.balanceOf(user2).call()
+				amount.toString().should.equal((+user2DaiBalance.toString()- +toWei(1).toString()).toString(), "user2 dai balance is incorrect")
 				// Check user 3 token balance
-				amount = await dai.balanceOf(user3);
-				amount.toString().should.equal(daiToken(98).toString())
+				amount = await dai.methods.balanceOf(user3).call()
+				amount.toString().should.equal((+user3DaiBalance.toString()- +toWei(2).toString()).toString(), "user3 dai balance is incorrect")
 				// Check project token balance and raised funds
-				amount = await dai.balanceOf(projectAddress)
-				amount.toString().should.equal(daiToken(3).toString())
+				amount = await dai.methods.balanceOf(projectAddress).call()
+				amount.toString().should.equal(toWei(3).toString())
 				project = new web3.eth.Contract(Project.abi, projectAddress)
 				const raisedFunds = await project.methods.raisedFunds().call()
-				raisedFunds.toString().should.equal(daiToken(3).toString())
+				raisedFunds.toString().should.equal(toWei(3).toString())
 				// Check supporter funds on project
 				supporterFunds = await project.methods.supporterFunds(user2).call()
-				supporterFunds.toString().should.equal(daiToken(1).toString(), 'user2 supporter funds is incorrect')
+				supporterFunds.toString().should.equal(toWei(1).toString(), 'user2 supporter funds is incorrect')
 				supporterFunds = await project.methods.supporterFunds(user3).call()
-				supporterFunds.toString().should.equal(daiToken(2).toString(), 'user3 supporter funds is incorrect')			
+				supporterFunds.toString().should.equal(toWei(2).toString(), 'user3 supporter funds is incorrect')			
 			})
 			it('emits contribution event', () => {
 				const log = result.logs[0]
@@ -169,8 +175,8 @@ contract('Crowdfunder', ([deployer, feeAccount, user1, user2, user3]) => {
 				event.id.toString().should.equal('1', 'id is incorrect')
 				event.supporter.should.equal(user3, 'supporter is incorrect')
 				event.newSupporter.should.equal(true, 'supporter count is incorrect')
-				event.raisedFunds.toString().should.equal(daiToken(3).toString(), 'raisedFunds is incorrect')
-				event.fundAmount.toString().should.equal(daiToken(2).toString(), 'fundAmount is incorrect')
+				event.raisedFunds.toString().should.equal(toWei(3).toString(), 'raisedFunds is incorrect')
+				event.fundAmount.toString().should.equal(toWei(2).toString(), 'fundAmount is incorrect')
 				event.timestamp.toString().length.should.be.at.least(1, 'timestamp is present')
 			})
 		})
@@ -179,19 +185,19 @@ contract('Crowdfunder', ([deployer, feeAccount, user1, user2, user3]) => {
 				await time.increase(THIRTY_DAYS + 1)
 				timeIncrease = THIRTY_DAYS + 1
 				expectRevert(
-					crowdfunder.contribute('1', daiToken(3), {from: user2}),
+					crowdfunder.contribute('1', toWei(3), {from: user2}),
 					'Error, project must be open' 
 				);
 			})
 			it('rejects invalid project ids', () => {
 				expectRevert(
-					crowdfunder.contribute('9999', daiToken(1), {from: user2}),
+					crowdfunder.contribute('9999', toWei(1), {from: user2}),
 					'revert'	
 				);
 			})
 			it('rejects when creator tries to add funds to their own project', () => {
 				expectRevert(
-					crowdfunder.contribute('1', daiToken(1), {from: user1}),
+					crowdfunder.contribute('1', toWei(1), {from: user1}),
 					'Error, creators are not allowed to add funds to their own projects'
 				);
 			})
@@ -200,7 +206,7 @@ contract('Crowdfunder', ([deployer, feeAccount, user1, user2, user3]) => {
 				await crowdfunder.cancel('1', {from: user1})
 				// user2 tries to fund that project
 				expectRevert(
-					crowdfunder.contribute('1', daiToken(5), {from: user2}),
+					crowdfunder.contribute('1', toWei(5), {from: user2}),
 					'Error, project cancelled'
 				);
 			})
@@ -208,34 +214,40 @@ contract('Crowdfunder', ([deployer, feeAccount, user1, user2, user3]) => {
 	})
 
 	describe('disbursing collected funds', () => {
-		let result, timeGoal, projectAddress
+		let result, timeGoal, projectAddress, user1DaiBalance, feeAccountDaiBalance
 		beforeEach(async() => {
+			// Check user1 and fee account starting Dai balance
+			user1DaiBalance = await dai.methods.balanceOf(user1).call()
+			feeAccountDaiBalance = await dai.methods.balanceOf(feeAccount).call()
+
 			timeGoal = futureTime(THIRTY_DAYS + timeIncrease)
 			// user1 makes project
-			await crowdfunder.makeProject(name, description, imgHash, daiToken(10), timeGoal, {from: user1})
+			await crowdfunder.makeProject(name, description, imgHash, toWei(10), timeGoal, {from: user1})
 			//approve project to spend 10 of user2's dai
 			projectAddress = await crowdfunder.projects('1')
-			await dai.approve(projectAddress, daiToken(10), {from: user2})
+			await dai.methods.approve(projectAddress, toWei(10)).send({from: user2})
 		})
 		describe('success', () => {
 			it('disburses raised funds to creator with fee applied and fee amount to fee account', async() => {
-				let balance
+				let newBalance
 				// user2 fully funds user1's first and second project
-				await crowdfunder.contribute('1', daiToken(10), {from: user2})
+				await crowdfunder.contribute('1', toWei(10), {from: user2})
 				// increase the time past funding goal
 				await time.increase(THIRTY_DAYS + 1)
 				timeIncrease += THIRTY_DAYS + 1
 				// user1 calls disburse function once for both of their projects
 				result = await crowdfunder.disburse('1', {from: user1})
 				// check user 1 dai balance
-				balance = await dai.balanceOf(user1)
-				balance.toString().should.equal(daiToken(109).toString(), 'user1 dai balance is incorrect')
+				newBalance = await dai.methods.balanceOf(user1).call()
+				console.log(`START: ${user1DaiBalance} NEW: ${newBalance}`)
+				expect(+newBalance.toString() - +user1DaiBalance.toString()).to.eq(+toWei(9).toString(),'user1 dai balance is incorrect' )
+				//balance.toString().should.equal((+user1DaiBalance.toString()+ +toWei(9).toString()).toString(), )
 				// check feeAccount dai balance
-				balance = await dai.balanceOf(feeAccount)
-				balance.toString().should.equal(daiToken(1).toString(), 'feeAccount dai balance is incorrect')
+				newBalance = await dai.methods.balanceOf(feeAccount).call()
+				newBalance.toString().should.equal((+feeAccountDaiBalance.toString()+ +toWei(1)).toString(), 'feeAccount dai balance is incorrect')
 				// check first project dai balance
-				balance = await dai.balanceOf(projectAddress)
-				balance.toString().should.equal('0', 'project dai balance is incorrect')								
+				newBalance = await dai.methods.balanceOf(projectAddress).call()
+				newBalance.toString().should.equal('0', 'project dai balance is incorrect')								
 			})
 			it('emits Disburse events', () => {
 				// disburse event for user1's project
@@ -244,15 +256,15 @@ contract('Crowdfunder', ([deployer, feeAccount, user1, user2, user3]) => {
 				const event = log.args
 				event.id.toString().should.equal('1', 'id is incorrect')
 				event.creator.should.equal(user1, 'creator is incorrect')
-				event.disburseAmount.toString().should.equal(daiToken(9).toString(), 'disburse amount is incorrect')
-				event.feeAmount.toString().should.equal(daiToken(1).toString(), 'fee amount is incorrect')
+				event.disburseAmount.toString().should.equal(toWei(9).toString(), 'disburse amount is incorrect')
+				event.feeAmount.toString().should.equal(toWei(1).toString(), 'fee amount is incorrect')
 				event.timestamp.toString().length.should.be.at.least(1, 'timestamp is not present')
 			})
 		})
 		describe('failure', () => {
-			it('rejects when atleast one of the projects is still open', async () => {
+			it('rejects when project is still open', async () => {
 				// user2 fully funds project
-				await crowdfunder.contribute('1', daiToken(10), {from: user2})
+				await crowdfunder.contribute('1', toWei(10), {from: user2})
 				// user1 calls disburse function on their project before waiting until the project has ended
 				expectRevert(
 					crowdfunder.disburse('1', {from: user1}),
@@ -261,7 +273,7 @@ contract('Crowdfunder', ([deployer, feeAccount, user1, user2, user3]) => {
 			})
 			it('rejects when project did not reach its funding goal', async() => {
 				// user2 contributes 9 dai to the project, 1 shy of its funding goal
-				await crowdfunder.contribute('1', daiToken(9), {from: user2})
+				await crowdfunder.contribute('1', toWei(9), {from: user2})
 				// increase the time past funding goal
 				await time.increase(THIRTY_DAYS + 1)
 				timeIncrease += THIRTY_DAYS + 1
@@ -272,7 +284,7 @@ contract('Crowdfunder', ([deployer, feeAccount, user1, user2, user3]) => {
 			})
 			it('rejects unauthorized disburses', async() => {
 				// user2 fully funds project
-				await crowdfunder.contribute('1', daiToken(10), {from: user2})
+				await crowdfunder.contribute('1', toWei(10), {from: user2})
 				// increase the time past funding goal
 				await time.increase(THIRTY_DAYS + 1)
 				timeIncrease += THIRTY_DAYS + 1
@@ -283,7 +295,7 @@ contract('Crowdfunder', ([deployer, feeAccount, user1, user2, user3]) => {
 			})
 			it('rejects when project funds have already been disbursed', async() => {
 				// user2 fully funds project
-				await crowdfunder.contribute('1', daiToken(10), {from: user2})
+				await crowdfunder.contribute('1', toWei(10), {from: user2})
 				// increase the time past funding goal
 				await time.increase(THIRTY_DAYS + 1)
 				timeIncrease += THIRTY_DAYS + 1
@@ -296,7 +308,7 @@ contract('Crowdfunder', ([deployer, feeAccount, user1, user2, user3]) => {
 			})	
 			it('rejects when project has been cancelled', async() => {
 				// user2 fully funds first project
-				await crowdfunder.contribute('1', daiToken(10), {from: user2})
+				await crowdfunder.contribute('1', toWei(10), {from: user2})
 				// user1 cancels their project
 				await crowdfunder.cancel('1', {from: user1})
 				// increase the time past funding goal
@@ -316,14 +328,14 @@ contract('Crowdfunder', ([deployer, feeAccount, user1, user2, user3]) => {
 		beforeEach(async() => {
 			timeGoal = futureTime(THIRTY_DAYS + timeIncrease)
 			//user1 makes project
-			await crowdfunder.makeProject(name, description, imgHash, daiToken(10), timeGoal , {from: user1})
+			await crowdfunder.makeProject(name, description, imgHash, toWei(10), timeGoal , {from: user1})
 			projectAddress = await crowdfunder.projects('1')
 			// user2 contributes funds to user1s project
-			await dai.approve(projectAddress, daiToken(7), {from: user2})
-			await crowdfunder.contribute('1', daiToken(5), {from: user2})
+			await dai.methods.approve(projectAddress, toWei(7)).send({from: user2})
+			await crowdfunder.contribute('1', toWei(5), {from: user2})
 			// user3 contributes funds to user1s project 
-			await dai.approve(projectAddress, daiToken(3), {from: user3})
-			await crowdfunder.contribute('1', daiToken(3), {from: user3})
+			await dai.methods.approve(projectAddress, toWei(3)).send({from: user3})
+			await crowdfunder.contribute('1', toWei(3), {from: user3})
 		})
 		describe('success', () => {
 			let result, supporterFunds
@@ -355,8 +367,8 @@ contract('Crowdfunder', ([deployer, feeAccount, user1, user2, user3]) => {
 				const event = log.args
 				event.id.toString().should.equal('1', 'id is incorrect')
 				event.supporter.should.equal(user3, 'supporter is incorrect')
-				event.raisedFunds.toString().should.equal(daiToken(5).toString(), 'raisedFunds is incorrect')
-				event.refundAmount.toString().should.equal(daiToken(3).toString(), 'refundAmount is incorrect')
+				event.raisedFunds.toString().should.equal(toWei(5).toString(), 'raisedFunds is incorrect')
+				event.refundAmount.toString().should.equal(toWei(3).toString(), 'refundAmount is incorrect')
 				event.timestamp.toString().length.should.be.at.least(1, 'timestamp is present')
 			})
 		})
@@ -370,7 +382,7 @@ contract('Crowdfunder', ([deployer, feeAccount, user1, user2, user3]) => {
 			})
 			it('rejects refunds when project reached funding goal by deadline', async() => {
 				// user 2 adds enough funds for user1's first project to reach funding goal
-				await crowdfunder.contribute('1', daiToken(2), {from: user2})
+				await crowdfunder.contribute('1', toWei(2), {from: user2})
 				// increase time past funding deadline
 				await time.increase(THIRTY_DAYS + 1)
 				timeIncrease += THIRTY_DAYS + 1
@@ -388,7 +400,7 @@ contract('Crowdfunder', ([deployer, feeAccount, user1, user2, user3]) => {
 		beforeEach(async() => {
 			timeGoal = futureTime(THIRTY_DAYS + timeIncrease)
 			// user1 makes project
-			await crowdfunder.makeProject(name, description, imgHash, daiToken(10), timeGoal , {from: user1})
+			await crowdfunder.makeProject(name, description, imgHash, toWei(10), timeGoal , {from: user1})
 		})
 		describe('success', () => {
 			beforeEach(async() => {
@@ -407,12 +419,20 @@ contract('Crowdfunder', ([deployer, feeAccount, user1, user2, user3]) => {
 				const event = log.args
 				event.id.toString().should.equal('1', 'id is correct')
 				event.creator.should.equal(user1, 'creator is correct')
-				event.fundGoal.toString().should.equal(daiToken(10).toString(), 'fundGoal is correct')
+				event.fundGoal.toString().should.equal(toWei(10).toString(), 'fundGoal is correct')
 				event.timeGoal.toString().should.equal(timeGoal.toString(), 'timeGoal is correct')
 				event.timestamp.toString().length.should.be.at.least(1, 'timestamp is present')				
 			})
 		})
 		describe('failure', () => {
+			it('rejects when project has ended', async() => {
+				await time.increase(THIRTY_DAYS + 1)
+				timeIncrease += THIRTY_DAYS + 1
+				expectRevert(
+					crowdfunder.cancel('1', {from: user1}),
+					'Error, project must be open'
+				);
+			})
 			it('rejects invalid project ids', () => {
 				const invalidProjectId = '99999'
 				expectRevert(
@@ -420,18 +440,12 @@ contract('Crowdfunder', ([deployer, feeAccount, user1, user2, user3]) => {
 					'revert'
 				);
 			})
-			it('rejects unauthorized cancelations', () => {
+			it('rejects unauthorized cancelations', async() => {
 				expectRevert(
 					crowdfunder.cancel('1', {from: user2}),
 					'Error, only creator can cancel their project'
 				);
-			})
-			it('rejects when project has ended', async() => {
-				await time.increase(THIRTY_DAYS + 1)
-				expectRevert(
-					crowdfunder.cancel('1', {from: user1}),
-					'Error, project must be open'
-				);
+				await wait(1)
 			})
 		})
 	})

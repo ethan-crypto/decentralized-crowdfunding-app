@@ -1,13 +1,11 @@
 const Web3 = require('web3') 	
 const web3 = new Web3(new Web3.providers.HttpProvider('http://127.0.0.1:8545'))
 import { expect } from 'chai'
-import { futureTime } from './helpers'
-import { contractsLoadedSelector } from '../src/store/selectors'
+import { futureTime, toWei, fromWei, mainnetDai, mainnetWeth } from '../src/helpers'
 const { expectRevert, time } = require('@openzeppelin/test-helpers')
 const Swap = artifacts.require("Swap")
+const IERC20 = artifacts.require("IERC20")
 
-const toWei = (num) => web3.utils.toWei(num.toString(), "ether")
-const fromWei = (num) => web3.utils.fromWei(num.toString())
 
 require('chai')
 	.use(require('chai-as-promised'))
@@ -15,32 +13,11 @@ require('chai')
 
 contract("Swap",([deployer, user1]) => {
     const poolFee = "3000"
-    const daiAddress = "0x6B175474E89094C44Da98b954EedeAC495271d0F"
-    const wethAddress = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
     const swapRouter = "0xE592427A0AEce92De3Edee1F18E0157C05861564"
     const quoter = "0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6"
     let swap, swapRef
-    // spliced ERC20 token
-    let splicedAbi = [
-        // balanceOf
-        {
-          "constant":true,
-          "inputs":[{"name":"_owner","type":"address"}],
-          "name":"balanceOf",
-          "outputs":[{"name":"balance","type":"uint256"}],
-          "type":"function"
-        },
-        // decimals
-        {
-          "constant":true,
-          "inputs":[],
-          "name":"decimals",
-          "outputs":[{"name":"","type":"uint8"}],
-          "type":"function"
-        }
-      ];
     beforeEach(async() => {
-        swap = await Swap.new(daiAddress, wethAddress)
+        swap = await Swap.new(mainnetDai, mainnetWeth)
         swapRef = new web3.eth.Contract(Swap.abi, swap.address)
     })
     describe("deployment", () => {
@@ -49,9 +26,9 @@ contract("Swap",([deployer, user1]) => {
             result = await swap.poolFee();
             result.toString().should.equal(poolFee);
             result = await swap.dai();
-            result.toString().should.equal(daiAddress)
+            result.toString().should.equal(mainnetDai)
             result = await swap.weth();
-            result.toString().should.equal(wethAddress)
+            result.toString().should.equal(mainnetWeth)
         })
         it("tracks the uniswap swapRouter and quoter contract addresses", async() => {
             result = await swap.swapRouter();
@@ -85,7 +62,7 @@ contract("Swap",([deployer, user1]) => {
             let result
             beforeEach(async() => {
                 // load dai contract
-                daiRef = new web3.eth.Contract(splicedAbi, daiAddress)
+                daiRef = new web3.eth.Contract(IERC20.abi, mainnetDai)
     
                 // start Ether and DAI balance before swap
                 ethBalance = await web3.eth.getBalance(user1) //BN
@@ -133,7 +110,7 @@ contract("Swap",([deployer, user1]) => {
                 console.log(`DAI balance after swap: ${fromWei(newDaiBalance)}`)
             })
         })
-        describe("failure", () => {
+        describe("failure",() => {
             it("It rejects when dai amount or eth amount equals to zero", () => {
                 expectRevert(
                     swap.convertEthToExactDai('0', futureTime(15), {from : user1, value: toWei(1)}),
