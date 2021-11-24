@@ -1,7 +1,5 @@
-const Web3 = require('web3') 	
-const web3 = new Web3(new Web3.providers.HttpProvider('http://127.0.0.1:8545'))
 import { expect } from 'chai'
-import { futureTime, toWei, fromWei, mainnetDai, mainnetWeth } from '../src/helpers'
+import { futureTime, toWei, fromWei, mainnetDai, mainnetWeth } from './helpers'
 const { expectRevert, time } = require('@openzeppelin/test-helpers')
 const Swap = artifacts.require("Swap")
 const IERC20 = artifacts.require("IERC20")

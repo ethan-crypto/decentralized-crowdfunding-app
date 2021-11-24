@@ -1,4 +1,4 @@
-import { toWei, futureTime, mainnetDai, wait } from '../src/helpers'
+import { toWei, futureTime, mainnetDai, wait } from './helpers'
 const { expectRevert, time } = require('@openzeppelin/test-helpers')
 const Project = artifacts.require("Project")
 const Crowdfunder = artifacts.require("Crowdfunder")

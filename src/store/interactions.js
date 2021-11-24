@@ -4,6 +4,7 @@ import {
 	web3AccountLoaded,
 	daiLoaded,
 	crowdfunderLoaded,
+	deploymentDataLoaded,
 	cancelledProjectsLoaded,
 	successfulProjectsLoaded,
 	allProjectsLoaded,
@@ -23,24 +24,59 @@ import {
 	daiBalanceLoaded
 } from './actions'
 import Web3 from 'web3'
-import MockDai from '../abis/MockDai.json'
 import Swap from '../abis/Swap.json'
 import Crowdfunder from '../abis/Crowdfunder.json'
+
+
+// spliced ERC20 ABI
+const splicedABI = [
+	// balanceOf
+	{
+		"stateMutability": "view",
+		"inputs": [{ "name": "_owner", "type": "address" }],
+		"name": "balanceOf",
+		"outputs": [{ "name": "balance", "type": "uint256" }],
+		"type": "function"
+	},
+	// decimals
+	{
+		"stateMutability": "view",
+		"inputs": [],
+		"name": "decimals",
+		"outputs": [{ "name": "", "type": "uint8" }],
+		"type": "function"
+	},
+	// approve
+	{
+		"stateMutability": "nonpayable",
+		"inputs": [{ "name": "spender", "type": "address" }, { "name": "amount", "type": "uint256" }],
+		"name": "approve",
+		"outputs": [{ "name": "", "type": "bool" }],
+		"type": "function"
+	}
+
+];
 
 //Declare IPFS
 const { create } = require('ipfs-http-client')
 const ipfs = create({ host: 'ipfs.infura.io', port: 5001, protocol: 'https' }) // leaving out the arguments will default to these values
 
 export const loadWeb3 = async (dispatch) => {
-	if (typeof window.ethereum !== 'undefined') {
-		const web3 = new Web3(window.ethereum)
-		dispatch(web3Loaded(web3))
-		return web3
-	} else {
-		window.alert('Please install MetaMask')
-		window.location.assign("https://metamask.io/")
-	}
-}
+	if (window.ethereum) {
+		window.web3 = new Web3(window.ethereum)
+		await window.ethereum.enable()
+		dispatch(web3Loaded(window.web3))
+		return window.web3
+	  }
+	  else if (window.web3) {
+		window.web3 = new Web3(window.web3.currentProvider)
+		dispatch(web3Loaded(window.web3))
+		return window.web3
+	  }
+	  else {
+		window.alert('Non-Ethereum browser detected. You should consider trying MetaMask!')
+	  }
+  }
 
 export const loadAccount = async (web3, dispatch) => {
 	const accounts = await web3.eth.getAccounts()
@@ -55,10 +91,10 @@ export const loadAccount = async (web3, dispatch) => {
 	}
 }
 
-export const loadDai = async (web3, networkId, dispatch) => {
+export const loadDai = async (web3, dispatch) => {
 	try {
-		console.log(networkId)
-		const dai = new web3.eth.Contract(MockDai.abi, MockDai.networks[networkId].address)
+		const daiAddress = "0x6B175474E89094C44Da98b954EedeAC495271d0F"
+		const dai = new web3.eth.Contract(splicedABI,daiAddress)
 		dispatch(daiLoaded(dai))
 		return dai
 	} catch (error) {
@@ -70,8 +106,12 @@ export const loadDai = async (web3, networkId, dispatch) => {
 
 export const loadCrowdfunder = async (web3, networkId, dispatch) => {
 	try {
+		// Create new web3 contract insatnce
 		const crowdfunder = new web3.eth.Contract(Crowdfunder.abi, Crowdfunder.networks[networkId].address)
 		dispatch(crowdfunderLoaded(crowdfunder))
+		//Fetch crowdfunder contract deployment data
+		const deploymentData = await web3.eth.getTransaction(Crowdfunder.networks[networkId].transactionHash)
+		dispatch(deploymentDataLoaded(deploymentData))
 		return crowdfunder
 	} catch (error) {
 		console.log('Contract not deployed to the current network. Please select another network with Metamask.')
@@ -85,36 +125,40 @@ export const loadDaiBalance = async (dai, dispatch, account) => {
 	dispatch(daiBalanceLoaded(daiBalance))
 }
 
-export const loadAllCrowdfunderData = async (crowdfunder, dispatch) => {
+export const loadAllCrowdfunderData = async (crowdfunder, deployment, dispatch) => {
+	// Get the block number where the deployment took place in
+	const startingBlock = deployment.blockNumber
 	// Fetch refunds with the "Refund" event stream
-	const refundStream = await crowdfunder.getPastEvents('Refund', { fromBlock: 0, toBlock: 'latest' })
+	const refundStream = await crowdfunder.getPastEvents("Refund", { fromBlock: startingBlock, toBlock: 'latest' })
 	// Format refunds
 	const allRefunds = refundStream.map((event) => event.returnValues)
+	console.log(`refund stream: ${refundStream}`)
 	// Add refunds to the redux store
 	dispatch(allRefundsLoaded(allRefunds))
+	
 	// Fetch contributions with the "Contribution" event stream
-	const contributionStream = await crowdfunder.getPastEvents('Contribution', { fromBlock: 0, toBlock: 'latest' })
+	const contributionStream = await crowdfunder.getPastEvents('Contribution', { fromBlock: startingBlock, toBlock: 'latest' })
 	// Format contributions
 	const allContributions = contributionStream.map((event) => event.returnValues)
 	// Add refunds to the redux store
 	console.log(allContributions)
 	dispatch(allContributionsLoaded(allContributions))
-
+	
 	// Fetch cancelled projects with the "Cancel" event stream
-	const cancelStream = await crowdfunder.getPastEvents('Cancel', { fromBlock: 0, toBlock: 'latest' })
+	const cancelStream = await crowdfunder.getPastEvents('Cancel', { fromBlock: startingBlock, toBlock: 'latest' })
 	// Format cancelled orders
 	const cancelledProjects = cancelStream.map((event) => event.returnValues)
 	// Add cancelled orders to the redux store
 	dispatch(cancelledProjectsLoaded(cancelledProjects))
 
 	// Fetch successful projects with the "Disburse" event stream
-	const disburseStream = await crowdfunder.getPastEvents('Disburse', { fromBlock: 0, toBlock: 'latest' })
+	const disburseStream = await crowdfunder.getPastEvents('Disburse', { fromBlock: startingBlock, toBlock: 'latest' })
 	// Format successfulProjects
 	const successfulProjects = disburseStream.map((event) => event.returnValues)
 	// Add successfulProjects projects to the redux store
 	dispatch(successfulProjectsLoaded(successfulProjects))
 	// Fetch all projects with the "ProjectMade" event stream
-	const projectStream = await crowdfunder.getPastEvents('ProjectMade', { fromBlock: 0, toBlock: 'latest' })
+	const projectStream = await crowdfunder.getPastEvents('ProjectMade', { fromBlock: startingBlock, toBlock: 'latest' })
 	// Format all projects
 	const allProjects = await projectStream.map((event) => event.returnValues)
 
@@ -128,8 +172,10 @@ export const loadAllCrowdfunderData = async (crowdfunder, dispatch) => {
 			supporterCount: newSupporters.length
 		}
 	}
+	
 	// Add all projects to the redux store
 	dispatch(allProjectsLoaded(allProjects))
+	
 }
 
 export const subscribeToEvents = async (crowdfunder, dispatch) => {

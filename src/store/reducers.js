@@ -28,6 +28,8 @@ function crowdfunder(state = {}, action) {
 	switch(action.type) {
 		case 'CROWDFUNDER_LOADED':
 			return { ...state, loaded: true, contract: action.contract}
+		case 'DEPLOYMENT_DATA_LOADED':
+			return { ...state, deployment: { loaded: true, data: action.deployment} }
 		case 'CANCELLED_PROJECTS_LOADED':
 			return { ...state, cancelledProjects: { loaded: true, data: action.cancelledProjects } }
 		case 'SUCCESSFUL_PROJECTS_LOADED':

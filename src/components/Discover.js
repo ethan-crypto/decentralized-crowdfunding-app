@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
+import Form from 'react-bootstrap/Form'
 import Spinner from './Spinner'
 import { 
   crowdfunderSelector,

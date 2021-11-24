@@ -14,7 +14,7 @@ contract Crowdfunder {
 		string name,
 		string description,
 		string imgHash,
-		address indexed creator,
+		address creator,
 		uint256 fundGoal,
 		uint256 timeGoal,
 		uint256 timestamp

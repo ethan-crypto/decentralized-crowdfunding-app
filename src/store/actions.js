@@ -29,6 +29,14 @@ export function crowdfunderLoaded(contract) {
 	}
 }
 
+export function deploymentDataLoaded(deployment) {
+	return {
+		type: 'DEPLOYMENT_DATA_LOADED',
+		deployment
+	}
+}
+
+
 export function cancelledProjectsLoaded(cancelledProjects) {
 	return {
 		type: 'CANCELLED_PROJECTS_LOADED',

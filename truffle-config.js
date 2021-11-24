@@ -7,9 +7,10 @@ const privateKeys = process.env.PRIVATE_KEYS || ""
 module.exports = {
   networks: {
     development: {
+      networkCheckTimeout: 10000,
       host: "127.0.0.1",
       port: 8545,
-      network_id: "*" // Match any network id
+      network_id: "*", // Match any network id
     },
     kovan: {
       provider: function() {
@@ -19,13 +20,24 @@ module.exports = {
         )
       },
       network_id: 42
+    },
+    ropsten: {
+      provider: function() {
+        return new HDWalletProvider(
+          privateKeys.split(','), // Array of account private keys
+          `https://ropsten.infura.io/v3/${process.env.INFURA_API_KEY}`// Url to an Ethereum Node
+        )
+      },
+      gas: 5000000,
+      gasPrice: 5000000000, // 5 gwei
+      network_id: 3
     }
   },
   contracts_directory: './src/contracts/',
   contracts_build_directory: './src/abis/',
   compilers: { 
     solc: {
-      version: "0.8.9",
+      version: "^0.8.9",
       optimizer: {
         enabled: true,
         runs: 200

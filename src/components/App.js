@@ -16,22 +16,26 @@ import {
 } from '../store/selectors'
 
 class App extends Component {
-  componentDidMount() {
+  componentWillMount() {
     this.loadBlockchainData(this.props.dispatch)
   }
 
   async loadBlockchainData(dispatch) {
     const web3 = await loadWeb3(dispatch)
     const networkId = await web3.eth.net.getId()
+    console.log(networkId)
     await loadAccount(web3, dispatch)
-    const dai = await loadDai(web3, networkId, dispatch)
+    const dai = await loadDai(web3, dispatch)
+    console.log(dai)
     if(!dai) {
       window.alert('Dai smart contract not detected on the current network. Please select another network with Metamask.')
     }
     const crowdfunder = await loadCrowdfunder(web3, networkId, dispatch)
+    console.log(crowdfunder)
     if(!crowdfunder) {
       window.alert('Crowdfunder smart contract not detected on the current network. Please select another network with Metamask.')
     }
+  
   }
 
   render() {

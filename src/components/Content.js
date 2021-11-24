@@ -7,6 +7,8 @@ import MyContributions from './MyContributions'
 import Transactions from './Transactions'
 import { 
   crowdfunderSelector,
+  web3Selector,
+  deploymentSelector
  } from '../store/selectors'
 import { 
   loadAllCrowdfunderData, 
@@ -105,13 +107,14 @@ const renderContent = project => {
 
 
 class Content extends Component {
-  componentDidMount() {
+  componentWillMount() {
     this.loadBlockchainData(this.props)
   }
   async loadBlockchainData(props) {
-    const { dispatch, crowdfunder } = props
-    await loadAllCrowdfunderData(crowdfunder, dispatch)
+    const { dispatch, crowdfunder, deployment } = props
+    await loadAllCrowdfunderData(crowdfunder, deployment, dispatch)
     await subscribeToEvents(crowdfunder, dispatch)
+    
   }
 
   render() {
@@ -139,6 +142,8 @@ class Content extends Component {
 function mapStateToProps(state) {
   return {
     crowdfunder: crowdfunderSelector(state),
+    web3: web3Selector(state),
+    deployment: deploymentSelector(state)
   }
 }
 

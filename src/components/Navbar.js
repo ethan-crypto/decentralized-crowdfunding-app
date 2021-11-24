@@ -8,20 +8,9 @@ import {
 } from '../store/selectors'
 import { loadDaiBalance } from '../store/interactions'
 
-<Navbar>
-  <Container>
-    <Navbar.Brand href="#home">Navbar with text</Navbar.Brand>
-    <Navbar.Toggle />
-    <Navbar.Collapse className="justify-content-end">
-      <Navbar.Text>
-        Signed in as: <a href="#login">Mark Otto</a>
-      </Navbar.Text>
-    </Navbar.Collapse>
-  </Container>
-</Navbar>
-
 class AppNavbar extends Component {
-  componentDidMount() {
+  
+  componentWillMount() {
     this.loadBlockchainData(this.props)
   }
   async loadBlockchainData(props) {

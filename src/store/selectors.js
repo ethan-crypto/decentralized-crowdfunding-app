@@ -16,8 +16,13 @@ export const daiLoadedSelector = createSelector(daiLoaded, dl => dl)
 const crowdfunderLoaded = state => get(state, 'crowdfunder.loaded', false)
 export const crowdfunderLoadedSelector = createSelector(crowdfunderLoaded, cl => cl)
 
+const deploymentLoaded = state => get(state, 'crowdfunder.deployment.loaded', false)
+
 const crowdfunder = state => get(state, 'crowdfunder.contract', false)
 export const crowdfunderSelector = createSelector(crowdfunder, cl => cl)
+
+const deployment = state => get(state, 'crowdfunder.deployment.data', {})
+export const deploymentSelector = createSelector(deployment, dep => dep)
 
 const dai = state => get(state, 'dai.contract', false)
 export const daiSelector = createSelector(dai, dl => dl)
@@ -25,7 +30,8 @@ export const daiSelector = createSelector(dai, dl => dl)
 export const contractsLoadedSelector = createSelector(
 	daiLoaded,
 	crowdfunderLoaded,
-	(dl, cl) => (dl && cl)
+	deploymentLoaded,
+	(dl, cl, dep) => (dl && cl && dep)
 )
 
 const daiBalance = state => get(state, 'dai.balance', null)
@@ -139,7 +145,7 @@ const formatProject = (project, successful, cancelled, allRefunds) => {
 		...project,
 		formattedRaisedFunds: formatFunds(project.raisedFunds),
 		formattedFundGoal: formatFunds(project.fundGoal),
-		durationInDays: ((+project.timeGoal - +project.timestamp)/86400),
+		durationInDays: Math.round((+project.timeGoal - +project.timestamp)/86400),
 		formattedTimestamp: moment.unix(project.timestamp).format('M/D/YYYY h:mm:ss a'),
 		percentFunded: Math.round(project.raisedFunds*100/project.fundGoal),
 		endDate: moment.unix(+project.timeGoal + +project.timestamp).format('M/D/YYYY h:mm:ss a')
