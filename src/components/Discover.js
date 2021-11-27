@@ -80,20 +80,21 @@ class Discover extends Component {
                           }
                         }}
                       >
-                        <div className="col-sm pe-sm-0 mb-sm-auto py-2">
+                        <div className="col-sm mx-sm-auto pe-sm-1 mb-sm-auto pt-2">
                           <input
-                            type="text"
+                            type="number"
                             placeholder="Dai Amount"
                             id={project.id}
                             value={contribution.id !== project.id ? '' : contribution.amount}
                             onChange={(e) => dispatch(contributionAmountChanged(e.target.value, project.id))}
-                            className="form-control form-control-sm bg-dark text-white"
+                            className="mx-0 form-control form-control-sm bg-dark text-white"
                             required />
                         </div>
-                        <div className="col-sm-auto ps-sm-0 mb-sm-auto py-2">
+                        <div className="col-sm-auto mx-sm-auto ps-sm-1 mb-sm-auto pt-2">
                           <button type="submit" className="btn btn-primary btn-block btn-sm">Contribute</button>
                         </div>
                       </form>
+                      <small >Cost:</small>
                     </li>
                   </ul>
                 </div>

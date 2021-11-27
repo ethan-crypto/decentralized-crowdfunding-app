@@ -67,7 +67,7 @@ const captureFile = dispatch => event => {
 
 
 
-class createProjectForm extends Component {
+class CreateProjectForm extends Component {
 
 	render() {
 		const { dispatch, handleSubmit, pristine, reset, submitting } = this.props
@@ -125,4 +125,4 @@ class createProjectForm extends Component {
 }
 
 
-export default reduxForm({ form: 'project' })(createProjectForm)
+export default reduxForm({ form: 'project' })(CreateProjectForm)

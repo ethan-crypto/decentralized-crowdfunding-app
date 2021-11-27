@@ -28,6 +28,7 @@ import {
 import Web3 from 'web3'
 import Swap from '../abis/Swap.json'
 import Crowdfunder from '../abis/Crowdfunder.json'
+import { futureTime } from '../helpers'
 
 
 // spliced ERC20 ABI
@@ -235,7 +236,8 @@ export const contributeToProject = async (dispatch, web3, amount, account, id, c
 
 export const makeProject = async (dispatch, web3, project, buffer, account, crowdfunder) => {
 	const fundGoalAmount = web3.utils.toWei((project.fundGoal).toString(), 'ether')
-	const timeGoal = (project.timeGoal * 86400)
+	// Convert time goal in days to future epoch time.
+	const timeGoal = (+project.timeGoal * 86400 + futureTime(0))
 	console.log("Submitting image file to ipfs...")
 	//adding file to the IPFS
 	const result = await ipfs.add(buffer)

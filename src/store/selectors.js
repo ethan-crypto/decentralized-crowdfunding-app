@@ -149,11 +149,11 @@ const formatProject = (project, successful, cancelled, allRefunds) => {
 	}
 	return({
 		...project,
-		formattedRaisedFunds: formatFunds(project.raisedFunds),
+		formattedRaisedFunds: formatFunds(get(project, 'raisedFunds', 0)),
 		formattedFundGoal: formatFunds(project.fundGoal),
 		durationInDays: Math.round((+project.timeGoal - +project.timestamp)/86400),
 		formattedTimestamp: moment.unix(project.timestamp).format('M/D/YYYY h:mm:ss a'),
-		percentFunded: Math.round(project.raisedFunds*100/project.fundGoal),
+		percentFunded: Math.round(get(project, 'raisedFunds', 0)*100/project.fundGoal),
 		endDate: moment.unix(+project.timeGoal).format('M/D/YYYY h:mm:ss a')
 	})
 }
