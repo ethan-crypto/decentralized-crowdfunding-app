@@ -20,6 +20,13 @@ export function daiLoaded(contract) {
 		contract
 	}
 }
+//SWAP
+export function swapLoaded(contract) {
+	return {
+		type: 'SWAP_LOADED',
+		contract
+	}
+}
 
 //CROWDFUNDER
 export function crowdfunderLoaded(contract) {
@@ -36,6 +43,12 @@ export function deploymentDataLoaded(deployment) {
 	}
 }
 
+export function defaultPaymentMethodSet(bool) {
+	return {
+		type: 'DEFUALT_PAYMENT_METHOD_SET',
+		bool
+	}
+}
 
 export function cancelledProjectsLoaded(cancelledProjects) {
 	return {
@@ -55,6 +68,12 @@ export function allProjectsLoaded(allProjects) {
 	return {
 		type: 'ALL_PROJECTS_LOADED',
 		allProjects
+	}
+}
+
+export function paymentMethodToggled() {
+	return {
+		type: 'PAYMENT_METHOD_TOGGLED'
 	}
 }
 

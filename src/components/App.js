@@ -7,7 +7,8 @@ import {
   loadWeb3,
   loadAccount,
   loadDai,
-  loadCrowdfunder
+  loadCrowdfunder,
+  loadSwap
 } from '../store/interactions'
 import { 
   contractsLoadedSelector,
@@ -16,6 +17,7 @@ import {
 } from '../store/selectors'
 
 class App extends Component {
+
   componentWillMount() {
     this.loadBlockchainData(this.props.dispatch)
   }
@@ -23,25 +25,25 @@ class App extends Component {
   async loadBlockchainData(dispatch) {
     const web3 = await loadWeb3(dispatch)
     const networkId = await web3.eth.net.getId()
-    console.log(networkId)
     await loadAccount(web3, dispatch)
     const dai = await loadDai(web3, dispatch)
-    console.log(dai)
     if(!dai) {
       window.alert('Dai smart contract not detected on the current network. Please select another network with Metamask.')
     }
+    const swap = await loadSwap(web3, networkId, dispatch)
+    if(!swap) {
+      window.alert('Swap smart contract not detected on the current network. Please select another network with Metamask.')
+    }
     const crowdfunder = await loadCrowdfunder(web3, networkId, dispatch)
-    console.log(crowdfunder)
     if(!crowdfunder) {
       window.alert('Crowdfunder smart contract not detected on the current network. Please select another network with Metamask.')
     }
-  
   }
 
   render() {
     return (
       <div>
-        { this.props.loadNavbar ? < Navbar /> : <div className="dai"></div>}
+        { this.props.loadNavbar ? < Navbar /> : <div className="dai"></div> }
         { this.props.contractsLoaded ? <Content /> : <div className="content"></div> }
       </div>
     );

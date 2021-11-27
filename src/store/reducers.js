@@ -23,6 +23,20 @@ function dai(state = {}, action) {
 	}
 }
 
+function swap(state = {}, action) {
+	switch(action.type) {
+		case 'SWAP_LOADED':
+			return { ...state, loaded: true, contract: action.contract}
+		case 'DEFUALT_PAYMENT_METHOD_SET':
+			return {...state, payWithEth: action.bool } 
+		case 'PAYMENT_METHOD_TOGGLED':
+			return {...state, payWithEth: !state.payWithEth } 
+		default:
+			return state
+	}
+}
+
+
 function crowdfunder(state = {}, action) {
 	let index, data
 	switch(action.type) {
@@ -35,7 +49,6 @@ function crowdfunder(state = {}, action) {
 		case 'SUCCESSFUL_PROJECTS_LOADED':
 			return { ...state, successfulProjects: { loaded: true, data: action.successfulProjects } }
 		case 'ALL_PROJECTS_LOADED':
-		//allProjects: { loaded: true, data: { static: action.allProjects, dynamic: action.al} action.allProjects }
 			return { ...state, allProjects: { loaded: true, data: action.allProjects } }
 		case 'ALL_CONTRIBUTIONS_LOADED':
 			return {...state, allContributions: { loaded: true, data: action.contributions }}
@@ -167,6 +180,7 @@ function crowdfunder(state = {}, action) {
 const rootReducer = combineReducers({
 	web3,
 	dai,
+	swap,
 	crowdfunder,
 	form: formReducer
 })

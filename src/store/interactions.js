@@ -5,6 +5,7 @@ import {
 	daiLoaded,
 	crowdfunderLoaded,
 	deploymentDataLoaded,
+	swapLoaded,
 	cancelledProjectsLoaded,
 	successfulProjectsLoaded,
 	allProjectsLoaded,
@@ -21,7 +22,8 @@ import {
 	contributionRefunding,
 	contributionRefunded,
 	feePercentLoaded,
-	daiBalanceLoaded
+	daiBalanceLoaded,
+	defaultPaymentMethodSet
 } from './actions'
 import Web3 from 'web3'
 import Swap from '../abis/Swap.json'
@@ -93,6 +95,7 @@ export const loadAccount = async (web3, dispatch) => {
 
 export const loadDai = async (web3, dispatch) => {
 	try {
+		// Create new web3 dai contract instance
 		const daiAddress = "0x6B175474E89094C44Da98b954EedeAC495271d0F"
 		const dai = new web3.eth.Contract(splicedABI,daiAddress)
 		dispatch(daiLoaded(dai))
@@ -106,7 +109,7 @@ export const loadDai = async (web3, dispatch) => {
 
 export const loadCrowdfunder = async (web3, networkId, dispatch) => {
 	try {
-		// Create new web3 contract insatnce
+		// Create new web3 crowdfunder contract insatnce
 		const crowdfunder = new web3.eth.Contract(Crowdfunder.abi, Crowdfunder.networks[networkId].address)
 		dispatch(crowdfunderLoaded(crowdfunder))
 		//Fetch crowdfunder contract deployment data
@@ -120,9 +123,23 @@ export const loadCrowdfunder = async (web3, networkId, dispatch) => {
 
 }
 
+export const loadSwap = async(web3, networkId, dispatch) => {
+	try {
+		// Create new web3 swap contract instance
+		const swap = new web3.eth.Contract(Swap.abi, Swap.networks[networkId].address)
+		dispatch(swapLoaded(swap))
+		return swap
+	} catch (error) {
+		console.log('Contract not deployed to the current network. Please select another network with Metamask.')
+		return null
+	}
+}
+
 export const loadDaiBalance = async (dai, dispatch, account) => {
 	const daiBalance = await dai.methods.balanceOf(account).call()
 	dispatch(daiBalanceLoaded(daiBalance))
+	// Set default payment method
+	dispatch(defaultPaymentMethodSet(daiBalance == 0))
 }
 
 export const loadAllCrowdfunderData = async (crowdfunder, deployment, dispatch) => {
@@ -198,6 +215,7 @@ export const subscribeToEvents = async (crowdfunder, dispatch) => {
 }
 
 
+
 export const contributeToProject = async (dispatch, web3, amount, account, id, crowdfunder, dai) => {
 	amount = web3.utils.toWei(amount, 'ether')
 	//Fetch project address
@@ -235,7 +253,7 @@ export const makeProject = async (dispatch, web3, project, buffer, account, crow
 }
 
 export const cancelProject = (dispatch, web3, account, id, crowdfunder) => {
-	crowdfunder.methods.cancelProject(id).send({ from: account })
+	crowdfunder.methods.cancel(id).send({ from: account })
 		.on('transactionHash', (hash) => {
 			dispatch(projectCancelling())
 		})

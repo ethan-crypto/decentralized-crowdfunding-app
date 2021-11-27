@@ -13,6 +13,9 @@ export const web3Selector = createSelector(web3, w => w)
 const daiLoaded = state => get(state, 'dai.loaded', false)
 export const daiLoadedSelector = createSelector(daiLoaded, dl => dl)
 
+const swapLoaded = state => get(state, 'swap.loaded', false)
+export const swapLoadedSelector = createSelector(swapLoaded, dl => dl)
+
 const crowdfunderLoaded = state => get(state, 'crowdfunder.loaded', false)
 export const crowdfunderLoadedSelector = createSelector(crowdfunderLoaded, cl => cl)
 
@@ -37,6 +40,9 @@ export const contractsLoadedSelector = createSelector(
 const daiBalance = state => get(state, 'dai.balance', null)
 export const daiBalanceSelector = createSelector(daiBalance, balance => formatBalance(balance))
 
+const payWithEth = state => get(state, 'swap.payWithEth', false)
+export const payWithEthSelector = createSelector(payWithEth, bool => bool)
+
 const allProjectsLoaded = state => get(state, 'crowdfunder.allProjects.loaded', false)
 const allProjects = state => get(state, 'crowdfunder.allProjects.data', [])
 
@@ -52,6 +58,7 @@ const allRefunds = state => get(state, 'crowdfunder.allRefunds.data', [])
 const allContributionsLoaded = state => get(state, 'crowdfunder.allContributions.loaded', false)
 const allContributions = state => get(state, 'crowdfunder.allContributions.data', [])
 
+
 export const allRefundsLoadedSelector = createSelector(allRefundsLoaded, loaded => loaded)
 
 const projectCancelling = state => get(state,'crowdfunder.projectCancelling', false)
@@ -59,7 +66,6 @@ export const projectCancellingSelector = createSelector(projectCancelling, statu
 
 const projectFundsTransfering = state => get(state,'crowdfunder.projectFundsTransfering', false)
 export const projectFundsTransferingSelector = createSelector(projectFundsTransfering, status => status)
-
 
 const contributionRefunding = state => get(state,'crowdfunder.contributionRefunding', false)
 export const contributionRefundingSelector = createSelector(contributionRefunding, status => status)
@@ -148,7 +154,7 @@ const formatProject = (project, successful, cancelled, allRefunds) => {
 		durationInDays: Math.round((+project.timeGoal - +project.timestamp)/86400),
 		formattedTimestamp: moment.unix(project.timestamp).format('M/D/YYYY h:mm:ss a'),
 		percentFunded: Math.round(project.raisedFunds*100/project.fundGoal),
-		endDate: moment.unix(+project.timeGoal + +project.timestamp).format('M/D/YYYY h:mm:ss a')
+		endDate: moment.unix(+project.timeGoal).format('M/D/YYYY h:mm:ss a')
 	})
 }
 
@@ -158,7 +164,7 @@ const refundInfo = (project, refunds) => {
 	//Fetch latest refund 
 	const latestRefund = refunds[refunds.length - 1]
 	// Use raised funds data of latest refund to calculate total refund amount.
-	const totalRefundAmount = +project.raisedFunds - +get(latestRefund, 'raisedFunds', 0)
+	const totalRefundAmount = +project.raisedFunds - +get(latestRefund, 'raisedFunds', +project.raisedFunds)
 	const percentRefunded = Math.round(totalRefundAmount*100/project.raisedFunds)
 	return({
 		data: refunds,
