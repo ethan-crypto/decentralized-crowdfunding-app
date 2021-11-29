@@ -20,5 +20,13 @@ export const formatFunds = (funds) => {
   return funds
 }
 
+export const formatCost = (funds) => {
+  const precision = 100000
+  funds = funds/DECIMALS
+  funds = Math.round(funds * precision) / precision // Use 6 decimals
+
+  return funds
+}
+
 export const formatBalance = (balance) => formatFunds(balance)
 

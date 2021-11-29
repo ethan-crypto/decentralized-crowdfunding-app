@@ -1,7 +1,7 @@
 import { get, reject, groupBy } from 'lodash'
 import { createSelector } from 'reselect'
 import moment from 'moment'
-import { futureTime, formatFunds, formatBalance, GREEN, RED, BLUE, ORANGE, GREY } from '../helpers'
+import { futureTime, formatFunds, formatCost, formatBalance, GREEN, RED, BLUE, ORANGE, GREY } from '../helpers'
 require('moment-countdown')
 
 const account = state => get(state, 'web3.account')
@@ -29,6 +29,9 @@ export const deploymentSelector = createSelector(deployment, dep => dep)
 
 const dai = state => get(state, 'dai.contract', false)
 export const daiSelector = createSelector(dai, dl => dl)
+
+const swap = state => get(state, 'swap.contract', false)
+export const swapSelector = createSelector(swap, sl => sl)
 
 export const contractsLoadedSelector = createSelector(
 	daiLoaded,
@@ -69,6 +72,12 @@ export const projectFundsTransferingSelector = createSelector(projectFundsTransf
 
 const contributionRefunding = state => get(state,'crowdfunder.contributionRefunding', false)
 export const contributionRefundingSelector = createSelector(contributionRefunding, status => status)
+
+const ethCostLoading = state => get(state, 'swap.ethCostLoading', false)
+export const ethCostLoadingSelector = createSelector(ethCostLoading, loading => loading)
+
+const ethCost = state => get(state, 'swap.ethCost', '')
+export const ethCostSelector = createSelector(ethCost, cost => formatCost(cost))
 
 const formattedRefunds = state => allRefunds(state).map((refunds) => formatRefund(refunds))
 

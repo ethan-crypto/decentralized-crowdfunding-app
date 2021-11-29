@@ -28,6 +28,32 @@ export function swapLoaded(contract) {
 	}
 }
 
+export function defaultPaymentMethodSet(bool) {
+	return {
+		type: 'DEFUALT_PAYMENT_METHOD_SET',
+		bool
+	}
+}
+
+export function paymentMethodToggled() {
+	return {
+		type: 'PAYMENT_METHOD_TOGGLED'
+	}
+}
+
+export function ethCostLoading() {
+	return {
+		type: 'ETH_COST_LOADING'
+	}
+}
+
+export function ethCostLoaded(cost) {
+	return {
+		type: 'ETH_COST_LOADED',
+		cost
+	}
+}
+
 //CROWDFUNDER
 export function crowdfunderLoaded(contract) {
 	return {
@@ -43,12 +69,6 @@ export function deploymentDataLoaded(deployment) {
 	}
 }
 
-export function defaultPaymentMethodSet(bool) {
-	return {
-		type: 'DEFUALT_PAYMENT_METHOD_SET',
-		bool
-	}
-}
 
 export function cancelledProjectsLoaded(cancelledProjects) {
 	return {
@@ -71,11 +91,6 @@ export function allProjectsLoaded(allProjects) {
 	}
 }
 
-export function paymentMethodToggled() {
-	return {
-		type: 'PAYMENT_METHOD_TOGGLED'
-	}
-}
 
 export function contributingToProject() {
 	return {

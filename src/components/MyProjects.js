@@ -26,22 +26,6 @@ import {
 } from '../store/interactions'
 import CreateProjectForm from './CreateProjectForm'
 
-const renderCancelButton = (id, props) => {
-  return(
-    <li key={id} className="list-group-item py-2"> 
-      <button
-        className="btn btn-link btn-sm float-right pt-0"
-        name={id}
-        onClick={(event) => {
-          console.log(event.target.name)
-          cancelProject(props.dispatch, props.web3, props.account, event.target.name, props.crowdfunder)
-        }}
-      >
-        Cancel Project
-      </button> 
-    </li>
-  )  
-}
 
 const renderButton = (project, props) => {
   const isOpen = project.status === "OPEN"
@@ -127,7 +111,6 @@ class MyProjects extends Component {
     await loadFeePercent(dispatch, web3, crowdfunder, account)
   }
   render() {
-    console.log(this.props.myProjects)
     return (
       <div className="card bg-dark text-white">
         <div className="card-header">

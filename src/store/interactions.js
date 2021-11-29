@@ -9,6 +9,8 @@ import {
 	cancelledProjectsLoaded,
 	successfulProjectsLoaded,
 	allProjectsLoaded,
+	ethCostLoading,
+	ethCostLoaded,
 	contributingToProject,
 	contributedToProject,
 	projectMaking,
@@ -70,16 +72,16 @@ export const loadWeb3 = async (dispatch) => {
 		await window.ethereum.enable()
 		dispatch(web3Loaded(window.web3))
 		return window.web3
-	  }
-	  else if (window.web3) {
+	}
+	else if (window.web3) {
 		window.web3 = new Web3(window.web3.currentProvider)
 		dispatch(web3Loaded(window.web3))
 		return window.web3
-	  }
-	  else {
+	}
+	else {
 		window.alert('Non-Ethereum browser detected. You should consider trying MetaMask!')
-	  }
-  }
+	}
+}
 
 export const loadAccount = async (web3, dispatch) => {
 	const accounts = await web3.eth.getAccounts()
@@ -98,7 +100,7 @@ export const loadDai = async (web3, dispatch) => {
 	try {
 		// Create new web3 dai contract instance
 		const daiAddress = "0x6B175474E89094C44Da98b954EedeAC495271d0F"
-		const dai = new web3.eth.Contract(splicedABI,daiAddress)
+		const dai = new web3.eth.Contract(splicedABI, daiAddress)
 		dispatch(daiLoaded(dai))
 		return dai
 	} catch (error) {
@@ -124,7 +126,7 @@ export const loadCrowdfunder = async (web3, networkId, dispatch) => {
 
 }
 
-export const loadSwap = async(web3, networkId, dispatch) => {
+export const loadSwap = async (web3, networkId, dispatch) => {
 	try {
 		// Create new web3 swap contract instance
 		const swap = new web3.eth.Contract(Swap.abi, Swap.networks[networkId].address)
@@ -150,18 +152,16 @@ export const loadAllCrowdfunderData = async (crowdfunder, deployment, dispatch) 
 	const refundStream = await crowdfunder.getPastEvents("Refund", { fromBlock: startingBlock, toBlock: 'latest' })
 	// Format refunds
 	const allRefunds = refundStream.map((event) => event.returnValues)
-	console.log(`refund stream: ${refundStream}`)
 	// Add refunds to the redux store
 	dispatch(allRefundsLoaded(allRefunds))
-	
+
 	// Fetch contributions with the "Contribution" event stream
 	const contributionStream = await crowdfunder.getPastEvents('Contribution', { fromBlock: startingBlock, toBlock: 'latest' })
 	// Format contributions
 	const allContributions = contributionStream.map((event) => event.returnValues)
 	// Add refunds to the redux store
-	console.log(allContributions)
 	dispatch(allContributionsLoaded(allContributions))
-	
+
 	// Fetch cancelled projects with the "Cancel" event stream
 	const cancelStream = await crowdfunder.getPastEvents('Cancel', { fromBlock: startingBlock, toBlock: 'latest' })
 	// Format cancelled orders
@@ -183,17 +183,16 @@ export const loadAllCrowdfunderData = async (crowdfunder, deployment, dispatch) 
 	for (var i = 0; i < allProjects.length; i++) {
 		const contributions = allContributions.filter((c) => c.id === allProjects[i].id)
 		const newSupporters = contributions.filter((c) => c.newSupporter === true)
-		console.log(contributions)
 		allProjects[i] = {
 			...allProjects[i],
 			raisedFunds: get(contributions[contributions.length - 1], 'raisedFunds', 0),
 			supporterCount: newSupporters.length
 		}
 	}
-	
+
 	// Add all projects to the redux store
 	dispatch(allProjectsLoaded(allProjects))
-	
+
 }
 
 export const subscribeToEvents = async (crowdfunder, dispatch) => {
@@ -215,11 +214,26 @@ export const subscribeToEvents = async (crowdfunder, dispatch) => {
 	})
 }
 
+export const quoteEthCost = (dispatch, web3, amount, swap) => {
+	if(amount){
+		amount = web3.utils.toWei(amount, 'ether')
+		dispatch(ethCostLoading())
+		swap.methods.getEthInputAmount(amount).call((error, result) => {
+			if (result) {
+				dispatch(ethCostLoaded(result))
+			}
+			if (error) {
+				console.error(error)
+				window.alert(`There was an error!`)
+			}
+		})
+	} else dispatch(ethCostLoaded(amount))
+}
 
-
-export const contributeToProject = async (dispatch, web3, amount, account, id, crowdfunder, dai) => {
+export const contributeToProject = async (dispatch, web3, amount, cost, account, id, crowdfunder, dai, swap) => {
+	if(cost !== 0) await payWithEth(amount, cost, account, )
 	amount = web3.utils.toWei(amount, 'ether')
-	//Fetch project address
+	// Fetch project address
 	const projectAddress = await crowdfunder.methods.projects(id).call()
 	dai.methods.approve(projectAddress, amount).send({ from: account })
 		.on('transactionHash', (hash) => {
@@ -232,6 +246,10 @@ export const contributeToProject = async (dispatch, web3, amount, account, id, c
 					window.alert(`There was an error!`)
 				})
 		})
+}
+
+const payWithEth = async () => {
+
 }
 
 export const makeProject = async (dispatch, web3, project, buffer, account, crowdfunder) => {

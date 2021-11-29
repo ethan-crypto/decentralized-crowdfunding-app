@@ -31,6 +31,10 @@ function swap(state = {}, action) {
 			return {...state, payWithEth: action.bool } 
 		case 'PAYMENT_METHOD_TOGGLED':
 			return {...state, payWithEth: !state.payWithEth } 
+		case 'ETH_COST_LOADING':
+			return {...state, ethCostLoading: true } 
+		case 'ETH_COST_LOADED':
+			return {...state, ethCostLoading: false, ethCost: action.cost } 
 		default:
 			return state
 	}

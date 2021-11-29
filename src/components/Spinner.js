@@ -1,9 +1,14 @@
 import React from 'react';
+import Spinner from 'react-bootstrap/Spinner'
 
 export default function ({ type }) {
   if(type === 'table') {
     return(<tbody className="spinner-border text-light text-center"></tbody>)
-  } else {
+  } 
+  else if(type === 'small'){
+    return(<Spinner animation="border" variant="dark" size="sm" />)
+  }
+  else {
     return(<div className="spinner-border text-light text-center"></div>)
   }
 }
