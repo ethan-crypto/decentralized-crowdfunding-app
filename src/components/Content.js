@@ -56,12 +56,12 @@ const renderRefundInfo = refunds => {
   )
 }
 
-const renderContent = project => {
+const renderContent = (project) => {
   const projectRefundable = project.formattedRaisedFunds > 0 && project.refunds !== undefined
   return(
     <>
       <li className="list-group-item">
-        <p className="text-center"><img src={`https://ipfs.infura.io/ipfs/${project.imgHash}`} style={{ maxWidth: '420px'}}/></p>
+        <p className="text-center"><img src={`https://ipfs.infura.io/ipfs/${project.imgHash}`} alt={project.imgHash} className= 'mw-100' /></p>
         <p>{project.name}</p>
         <small className="float-left mt-1 text-muted"> {project.description} </small>
       </li>

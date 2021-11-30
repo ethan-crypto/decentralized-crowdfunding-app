@@ -1,7 +1,7 @@
 import React from 'react';
 import Spinner from 'react-bootstrap/Spinner'
 
-export default function ({ type }) {
+export function spinner ({ type }) {
   if(type === 'table') {
     return(<tbody className="spinner-border text-light text-center"></tbody>)
   } 
@@ -12,3 +12,4 @@ export default function ({ type }) {
     return(<div className="spinner-border text-light text-center"></div>)
   }
 }
+export default spinner

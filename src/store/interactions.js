@@ -5,7 +5,6 @@ import {
 	daiLoaded,
 	crowdfunderLoaded,
 	deploymentDataLoaded,
-	swapLoaded,
 	cancelledProjectsLoaded,
 	successfulProjectsLoaded,
 	allProjectsLoaded,
@@ -28,10 +27,8 @@ import {
 	defaultPaymentMethodSet
 } from './actions'
 import Web3 from 'web3'
-import Swap from '../abis/Swap.json'
 import Crowdfunder from '../abis/Crowdfunder.json'
 import { futureTime } from '../helpers'
-
 
 // spliced ERC20 ABI
 const splicedABI = [
@@ -126,23 +123,12 @@ export const loadCrowdfunder = async (web3, networkId, dispatch) => {
 
 }
 
-export const loadSwap = async (web3, networkId, dispatch) => {
-	try {
-		// Create new web3 swap contract instance
-		const swap = new web3.eth.Contract(Swap.abi, Swap.networks[networkId].address)
-		dispatch(swapLoaded(swap))
-		return swap
-	} catch (error) {
-		console.log('Contract not deployed to the current network. Please select another network with Metamask.')
-		return null
-	}
-}
 
 export const loadDaiBalance = async (dai, dispatch, account) => {
 	const daiBalance = await dai.methods.balanceOf(account).call()
 	dispatch(daiBalanceLoaded(daiBalance))
 	// Set default payment method
-	dispatch(defaultPaymentMethodSet(daiBalance == 0))
+	dispatch(defaultPaymentMethodSet(daiBalance === 0))
 }
 
 export const loadAllCrowdfunderData = async (crowdfunder, deployment, dispatch) => {
@@ -180,7 +166,7 @@ export const loadAllCrowdfunderData = async (crowdfunder, deployment, dispatch) 
 	// Format all projects
 	const allProjects = await projectStream.map((event) => event.returnValues)
 
-	for (var i = 0; i < allProjects.length; i++) {
+	for (let i = 0; i < allProjects.length; i++) {
 		const contributions = allContributions.filter((c) => c.id === allProjects[i].id)
 		const newSupporters = contributions.filter((c) => c.newSupporter === true)
 		allProjects[i] = {
@@ -214,48 +200,66 @@ export const subscribeToEvents = async (crowdfunder, dispatch) => {
 	})
 }
 
-export const quoteEthCost = (dispatch, web3, amount, swap) => {
-	if(amount){
+export const quoteEthCost = async(dispatch, web3, amount, crowdfunder) => {
+	if (amount) {
 		amount = web3.utils.toWei(amount, 'ether')
 		dispatch(ethCostLoading())
-		swap.methods.getEthInputAmount(amount).call((error, result) => {
-			if (result) {
-				dispatch(ethCostLoaded(result))
-			}
-			if (error) {
+		try {
+			const result = await crowdfunder.methods.getEthInputAmount(amount).call()
+			dispatch(ethCostLoaded(result))
+			return result
+		} catch(error){
+			window.alert("Could not fetch quoted ETH cost, please try again later")
+			console.log("Could not fetch quoted ETH cost")
+			return null
+		}
+	} else {
+		dispatch(ethCostLoaded(amount))
+		return amount
+	}
+}
+
+export const contributeToProject = async (dispatch, web3, amount, cost, account, id, crowdfunder, dai) => {
+	if (cost > 0) {
+		// Quote eth cost again to get latest cost
+		cost = await quoteEthCost(dispatch, web3, amount, crowdfunder)
+		// Increase the quoted cost by 10 percent to ensure the transaction goes through.
+		// The ETH thats leftover will be automatically refunded back to the user.
+		cost = Math.floor(1.1 * (cost))
+		// Send contribute function with ETH cost.
+		amount = web3.utils.toWei(amount, 'ether')
+		crowdfunder.methods.contribute(id, amount, futureTime(15)).send({ from: account, value: cost })
+			.on('transactionHash', (hash) => {
+				dispatch(contributingToProject(dispatch))
+			})
+			.on('error', (error) => {
 				console.error(error)
 				window.alert(`There was an error!`)
-			}
-		})
-	} else dispatch(ethCostLoaded(amount))
+			})
+	} else {
+		amount = web3.utils.toWei(amount, 'ether')
+		// Fetch project address
+		const projectAddress = await crowdfunder.methods.projects(id).call()
+		// Approve project to spend users DAI
+		dai.methods.approve(projectAddress, amount).send({ from: account })
+			.on('transactionHash', (hash) => {
+				crowdfunder.methods.contribute(id, amount, futureTime(15)).send({ from: account })
+					.on('transactionHash', (hash) => {
+						dispatch(contributingToProject(dispatch))
+					})
+					.on('error', (error) => {
+						console.error(error)
+						window.alert(`There was an error!`)
+					})
+			})
+	}
 }
 
-export const contributeToProject = async (dispatch, web3, amount, cost, account, id, crowdfunder, dai, swap) => {
-	if(cost !== 0) await payWithEth(amount, cost, account, )
-	amount = web3.utils.toWei(amount, 'ether')
-	// Fetch project address
-	const projectAddress = await crowdfunder.methods.projects(id).call()
-	dai.methods.approve(projectAddress, amount).send({ from: account })
-		.on('transactionHash', (hash) => {
-			crowdfunder.methods.contribute(id, amount).send({ from: account })
-				.on('transactionHash', (hash) => {
-					dispatch(contributingToProject(dispatch))
-				})
-				.on('error', (error) => {
-					console.error(error)
-					window.alert(`There was an error!`)
-				})
-		})
-}
-
-const payWithEth = async () => {
-
-}
 
 export const makeProject = async (dispatch, web3, project, buffer, account, crowdfunder) => {
 	const fundGoalAmount = web3.utils.toWei((project.fundGoal).toString(), 'ether')
 	// Convert time goal in days to future epoch time.
-	const timeGoal = (+project.timeGoal * 86400 + futureTime(0))
+	const timeGoal = (futureTime(+project.timeGoal * 86400))
 	console.log("Submitting image file to ipfs...")
 	//adding file to the IPFS
 	const result = await ipfs.add(buffer)

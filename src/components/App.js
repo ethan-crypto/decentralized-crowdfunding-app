@@ -8,7 +8,6 @@ import {
   loadAccount,
   loadDai,
   loadCrowdfunder,
-  loadSwap
 } from '../store/interactions'
 import { 
   contractsLoadedSelector,
@@ -29,10 +28,6 @@ class App extends Component {
     const dai = await loadDai(web3, dispatch)
     if(!dai) {
       window.alert('Dai smart contract not detected on the current network. Please select another network with Metamask.')
-    }
-    const swap = await loadSwap(web3, networkId, dispatch)
-    if(!swap) {
-      window.alert('Swap smart contract not detected on the current network. Please select another network with Metamask.')
     }
     const crowdfunder = await loadCrowdfunder(web3, networkId, dispatch)
     if(!crowdfunder) {

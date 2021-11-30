@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { Form, Card } from 'react-bootstrap'
+import { Form, Card, Button } from 'react-bootstrap'
 import Spinner from './Spinner'
 import {
   crowdfunderSelector,
@@ -12,8 +12,7 @@ import {
   formattedProjectsLoadedSelector,
   payWithEthSelector,
   ethCostLoadingSelector,
-  ethCostSelector,
-  swapSelector
+  ethCostSelector
 } from '../store/selectors'
 import {
   contributeToProject,
@@ -23,32 +22,6 @@ import {
   contributionAmountChanged,
   paymentMethodToggled
 } from '../store/actions'
-
-{/* <Card>
-  <Card.Header as="h5">Featured</Card.Header>
-  <Card.Body>
-    <Card.Title>Special title treatment</Card.Title>
-    <Card.Text>
-      With supporting text below as a natural lead-in to additional content.
-    </Card.Text>
-    <Button variant="primary">Go somewhere</Button>
-  </Card.Body>
-</Card> */}
-//<input type="text" value={this.state.value} onChange={this.handleChange} />
-
-const handleChange = (props, id) => event => {
-  props.dispatch(contributionAmountChanged(event.target.value, id))
-  if (props.payWithEth) quoteEthCost(props.dispatch, props.web3, event.target.value, props.swap)
-}
-
-const handleSubmit = (props, id) => event => {
-  event.preventDefault()
-  if(props.payWithEth){
-    
-  }
-  props.dispatch(contributionAmountChanged(event.target.value, id))
-  if (props.payWithEth) quoteEthCost(props.dispatch, props.web3, event.target.value, props.swap)
-}
 
 class Discover extends Component {
 
@@ -73,7 +46,10 @@ class Discover extends Component {
           <Form.Switch
             id="custom-switch"
             label="Pay with ETH"
-            onChange={(e) => dispatch(paymentMethodToggled(e.target.checked))}
+            onChange={(e) => {
+              dispatch(paymentMethodToggled(e.target.checked))
+              if(e.target.checked) quoteEthCost(dispatch, web3, contribution.amount, crowdfunder)
+            }}
             checked={payWithEth}
           />
         </Card.Header>
@@ -89,11 +65,11 @@ class Discover extends Component {
                     {renderContent(project)}
                     <li key={project.id} className="list-group-item py-2">
                       <form className="row"
-                        onSubmit={(event) => {
+                        onSubmit={event => {
                           event.preventDefault()
-                          contributeToProject(dispatch, web3, contribution.amount, account, project.id, crowdfunder, dai)
+                          contributeToProject(dispatch, web3, contribution.amount, ethCost, account, project.id, crowdfunder, dai)
                         }}
-                        onBlur={(event) => {
+                        onBlur={event => {
                           event.preventDefault()
                           if (!event.currentTarget.contains(event.relatedTarget)) {
                             document.getElementById(project.id).value = ''
@@ -106,15 +82,18 @@ class Discover extends Component {
                             placeholder="DAI Amount"
                             id={project.id}
                             value={contribution.id !== project.id ? '' : contribution.amount}
-                            onChange={handleChange(this.props, project.id)}
+                            onChange={event => {
+                              dispatch(contributionAmountChanged(event.target.value, project.id))
+                              if (payWithEth) quoteEthCost(dispatch, web3, event.target.value, crowdfunder)
+                            }}
                             className="mx-0 form-control form-control-sm bg-dark text-white"
                             required />
                         </div>
                         <div className="col-sm-auto mx-sm-auto ps-sm-1 mb-sm-auto py-2">
-                          <button type="submit" className="btn btn-primary btn-block btn-sm">Contribute</button>
+                          <Button type="submit" className="btn btn-primary btn-block btn-sm" disabled={ethCostLoading}>Contribute</Button>
                         </div>
                       </form>
-                      {ethCostLoading || ethCost > 0 && contribution.id === project.id
+                      {payWithEth && ((ethCostLoading || ethCost > 0) && contribution.id === project.id)
                         ? <small>Cost: {ethCostLoading ? <Spinner type="small" />
                           : `${ethCost} ETH`}</small> : null}
                     </li>
@@ -136,7 +115,6 @@ function mapStateToProps(state) {
     web3: web3Selector(state),
     crowdfunder: crowdfunderSelector(state),
     dai: daiSelector(state),
-    swap: swapSelector(state),
     account: accountSelector(state),
     discoverProjects: discoverProjectsSelector(state),
     contribution,

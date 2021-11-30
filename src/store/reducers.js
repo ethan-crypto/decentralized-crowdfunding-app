@@ -23,10 +23,13 @@ function dai(state = {}, action) {
 	}
 }
 
-function swap(state = {}, action) {
+function crowdfunder(state = {}, action) {
+	let index, data
 	switch(action.type) {
-		case 'SWAP_LOADED':
+		case 'CROWDFUNDER_LOADED':
 			return { ...state, loaded: true, contract: action.contract}
+		case 'DEPLOYMENT_DATA_LOADED':
+			return { ...state, deployment: { loaded: true, data: action.deployment} }
 		case 'DEFUALT_PAYMENT_METHOD_SET':
 			return {...state, payWithEth: action.bool } 
 		case 'PAYMENT_METHOD_TOGGLED':
@@ -35,19 +38,6 @@ function swap(state = {}, action) {
 			return {...state, ethCostLoading: true } 
 		case 'ETH_COST_LOADED':
 			return {...state, ethCostLoading: false, ethCost: action.cost } 
-		default:
-			return state
-	}
-}
-
-
-function crowdfunder(state = {}, action) {
-	let index, data
-	switch(action.type) {
-		case 'CROWDFUNDER_LOADED':
-			return { ...state, loaded: true, contract: action.contract}
-		case 'DEPLOYMENT_DATA_LOADED':
-			return { ...state, deployment: { loaded: true, data: action.deployment} }
 		case 'CANCELLED_PROJECTS_LOADED':
 			return { ...state, cancelledProjects: { loaded: true, data: action.cancelledProjects } }
 		case 'SUCCESSFUL_PROJECTS_LOADED':
@@ -57,7 +47,7 @@ function crowdfunder(state = {}, action) {
 		case 'ALL_CONTRIBUTIONS_LOADED':
 			return {...state, allContributions: { loaded: true, data: action.contributions }}
 		case 'CONTRIBUTING_TO_PROJECT':
-			return { ...state, contribution: { ...state.contribution, amount: null, id: null, loading: true } }
+			return { ...state, ethCost: null, contribution: { ...state.contribution, amount: null, id: null, loading: true } }
 		case 'CONTRIBUTION_AMOUNT_CHANGED':
 			return { ...state, contribution: { ...state.contribution, amount: action.amount, id: action.id } }
 		case 'CONTRIBUTED_TO_PROJECT':
@@ -184,7 +174,6 @@ function crowdfunder(state = {}, action) {
 const rootReducer = combineReducers({
 	web3,
 	dai,
-	swap,
 	crowdfunder,
 	form: formReducer
 })

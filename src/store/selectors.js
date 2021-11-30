@@ -13,9 +13,6 @@ export const web3Selector = createSelector(web3, w => w)
 const daiLoaded = state => get(state, 'dai.loaded', false)
 export const daiLoadedSelector = createSelector(daiLoaded, dl => dl)
 
-const swapLoaded = state => get(state, 'swap.loaded', false)
-export const swapLoadedSelector = createSelector(swapLoaded, dl => dl)
-
 const crowdfunderLoaded = state => get(state, 'crowdfunder.loaded', false)
 export const crowdfunderLoadedSelector = createSelector(crowdfunderLoaded, cl => cl)
 
@@ -30,9 +27,6 @@ export const deploymentSelector = createSelector(deployment, dep => dep)
 const dai = state => get(state, 'dai.contract', false)
 export const daiSelector = createSelector(dai, dl => dl)
 
-const swap = state => get(state, 'swap.contract', false)
-export const swapSelector = createSelector(swap, sl => sl)
-
 export const contractsLoadedSelector = createSelector(
 	daiLoaded,
 	crowdfunderLoaded,
@@ -43,7 +37,7 @@ export const contractsLoadedSelector = createSelector(
 const daiBalance = state => get(state, 'dai.balance', null)
 export const daiBalanceSelector = createSelector(daiBalance, balance => formatBalance(balance))
 
-const payWithEth = state => get(state, 'swap.payWithEth', false)
+const payWithEth = state => get(state, 'crowdfunder.payWithEth', false)
 export const payWithEthSelector = createSelector(payWithEth, bool => bool)
 
 const allProjectsLoaded = state => get(state, 'crowdfunder.allProjects.loaded', false)
@@ -73,10 +67,10 @@ export const projectFundsTransferingSelector = createSelector(projectFundsTransf
 const contributionRefunding = state => get(state,'crowdfunder.contributionRefunding', false)
 export const contributionRefundingSelector = createSelector(contributionRefunding, status => status)
 
-const ethCostLoading = state => get(state, 'swap.ethCostLoading', false)
+const ethCostLoading = state => get(state, 'crowdfunder.ethCostLoading', false)
 export const ethCostLoadingSelector = createSelector(ethCostLoading, loading => loading)
 
-const ethCost = state => get(state, 'swap.ethCost', '')
+const ethCost = state => get(state, 'crowdfunder.ethCost', '')
 export const ethCostSelector = createSelector(ethCost, cost => formatCost(cost))
 
 const formattedRefunds = state => allRefunds(state).map((refunds) => formatRefund(refunds))
@@ -156,11 +150,13 @@ const formatProject = (project, successful, cancelled, allRefunds) => {
 			projectTypeClass: ORANGE
 		}
 	}
+	const days = (+project.timeGoal - +project.timestamp)/86400
+	const durationInDays = days < 10 ? Math.round(days*10)/10 /* Use 1 decimal */ : Math.round(days) //No decimals
 	return({
 		...project,
 		formattedRaisedFunds: formatFunds(get(project, 'raisedFunds', 0)),
 		formattedFundGoal: formatFunds(project.fundGoal),
-		durationInDays: Math.round((+project.timeGoal - +project.timestamp)/86400),
+		durationInDays,
 		formattedTimestamp: moment.unix(project.timestamp).format('M/D/YYYY h:mm:ss a'),
 		percentFunded: Math.round(get(project, 'raisedFunds', 0)*100/project.fundGoal),
 		endDate: moment.unix(+project.timeGoal).format('M/D/YYYY h:mm:ss a')
