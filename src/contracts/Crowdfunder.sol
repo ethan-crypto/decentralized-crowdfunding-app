@@ -1,6 +1,13 @@
 //SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.1;
+pragma abicoder v2;
 
+import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
+import '@uniswap/v3-periphery/contracts/interfaces/IQuoter.sol';
+
+interface IUniSwapRouter is ISwapRouter {
+    function refundETH() external payable;
+}
 import "./Project.sol"; 
 
 contract Crowdfunder {
@@ -9,6 +16,17 @@ contract Crowdfunder {
 	uint256 public feePercent; // the fee percentage
 	uint256 public projectCount;
 	mapping(uint256 => Project) public projects;
+	uint24 public constant poolFee = 3000;
+    address public weth;
+    IUniSwapRouter public constant swapRouter = IUniSwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
+    IQuoter public constant quoter = IQuoter(0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6);
+	event Converted (
+		uint256 id,
+        address user,
+        uint256 amountOut,
+        uint256 amountInMaximum,
+        uint256 amountIn
+    );
 	event ProjectMade (
 		uint256 id,
 		string name,
@@ -49,15 +67,51 @@ contract Crowdfunder {
 		uint256 timestamp	
 	);
 
-	constructor (address _dai, address _feeAccount, uint256 _feePercent) {
+
+	constructor (address _dai, address _weth, address _feeAccount, uint256 _feePercent) {
 		feeAccount = _feeAccount;
 		feePercent = _feePercent;
 		dai = _dai;
+		weth = _weth;
 	}
 
-	// Fallback: reverts if Ether is sent to this smart contract by mistake
-    fallback () external { revert(); }
+    // Used to accept swapRouter refund 
+    receive() external payable {} 
     
+    function getEthInputAmount(uint256 _amountOut) external payable returns(uint256 _amountIn) {
+        address _tokenIn = weth;
+        address _tokenOut = dai;
+        uint24 _fee = 500;
+        uint160 sqrtPriceLimitX96 = 0;
+        _amountIn = quoter.quoteExactOutputSingle(
+            _tokenIn,
+            _tokenOut,
+            _fee,
+            _amountOut,
+            sqrtPriceLimitX96
+        );
+    }
+	function convertEthToExactDai(uint256 _id,uint256 _daiAmountOut, uint256 _deadline, address _user, uint256 _maxEthAmountIn) internal {
+        require(_daiAmountOut > 0, "Error, DAI amount out must be greater than 0");
+        ISwapRouter.ExactOutputSingleParams memory params =
+            ISwapRouter.ExactOutputSingleParams({
+                tokenIn: weth,
+                tokenOut: dai,
+                fee: poolFee,
+                recipient: address(projects[_id]),
+                deadline: _deadline,
+                amountOut: _daiAmountOut,
+                amountInMaximum: _maxEthAmountIn,
+                sqrtPriceLimitX96: 0
+            });
+
+        uint256 _amountIn = swapRouter.exactOutputSingle{value: _maxEthAmountIn}(params);
+        swapRouter.refundETH();
+        // Send the refunded ETH back to sender
+        (bool success, ) = _user.call{value: address(this).balance }('');
+        require(success, "Refund failed");
+        emit Converted (_id,_user, _daiAmountOut, _maxEthAmountIn, _amountIn);
+    }
     function makeProject(string memory _name, string memory _description, string memory _imgHash, uint256 _fundGoal, uint256 _timeGoal) external {
         require(_timeGoal > block.timestamp, 'Error, time goal must exist in the future');
 		require(_timeGoal < 60 days + block.timestamp, 'Error, time goal must be less than 60 days');
@@ -75,8 +129,14 @@ contract Crowdfunder {
 		emit Cancel(_id, msg.sender, _fundGoal, _timeGoal, _timestamp);
 	}
 
-	function contribute(uint256 _id, uint256 _amount) external {
-	    (bool _newSupporter, uint256 _raisedFunds, uint256 _timestamp) = projects[_id].contribute(_amount, msg.sender);
+	function contribute(uint256 _id, uint256 _amount, uint256 _deadline) external payable {
+		require(_amount > 0, 'Error, DAI amount must be greater than 0');
+		bool swapped;
+		if(msg.value > 0) {
+			convertEthToExactDai(_id,_amount, _deadline, msg.sender, msg.value);
+			swapped = true;
+		}
+	    (bool _newSupporter, uint256 _raisedFunds, uint256 _timestamp) = projects[_id].contribute(_amount, msg.sender, swapped);
 		emit Contribution (_id, msg.sender, _newSupporter, _raisedFunds, _amount, _timestamp);	
 	}
 

@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.1;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -92,7 +92,7 @@ contract Project {
 		return(fundGoal, timeGoal, block.timestamp);    
 	}
 
-	function contribute(uint256 _amount, address _user) onlyParentContract external returns(bool, uint256, uint256) {
+	function contribute(uint256 _amount, address _user,bool _swapped) onlyParentContract external returns(bool, uint256, uint256) {
 	    bool _newSupporter;
 		require(!cancelled, 'Error, project cancelled');
 		require(!callerIsCreator(_user), 'Error, creators are not allowed to add funds to their own projects');
@@ -102,7 +102,7 @@ contract Project {
 		}
 		raisedFunds += _amount;
 		supporterFunds[_user] += _amount;
-		require(dai.transferFrom(_user, address(this), _amount));
+		if(!_swapped)require(dai.transferFrom(_user, address(this), _amount));
 		emit Contribution (_user, _newSupporter, raisedFunds , _amount, block.timestamp);	
 		return(_newSupporter, raisedFunds, block.timestamp);
 	}

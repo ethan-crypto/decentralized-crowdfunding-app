@@ -1,11 +1,13 @@
 //SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.9;
+
+// This contract is not used by my application. It is only used to seed ganache accounts with Dai for testing purposes. 
+pragma solidity ^0.8.1;
 pragma abicoder v2;
 
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import '@uniswap/v3-periphery/contracts/interfaces/IQuoter.sol';
 
-interface IUniSwapRouter is ISwapRouter {
+interface IUSwapRouter is ISwapRouter {
     function refundETH() external payable;
 }
 
@@ -13,7 +15,7 @@ contract Swap {
     uint24 public constant poolFee = 3000;
     address public dai;
     address public weth;
-    IUniSwapRouter public constant swapRouter = IUniSwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
+    IUSwapRouter public constant swapRouter = IUSwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
     IQuoter public constant quoter = IQuoter(0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6);
     event Converted (
         address user,

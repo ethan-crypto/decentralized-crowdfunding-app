@@ -92,7 +92,7 @@ contract("Swap",([deployer, user1]) => {
             })
             it("successfully executes swap and refunds excess ether back to user", async() => {
                 const newEthBalance = await web3.eth.getBalance(user1) //Actual Eth balance after swap function executed
-                const subtractedEthBalance = +ethBalance.toString() - +ethAmountIn.toString() //Subtracted ETH balance excluding fees
+                const subtractedEthBalance = +ethBalance.toString() - ethAmountIn.toString() //Subtracted ETH balance excluding fees
                 // There should be no ether left in the smart contract. All of it should have been refunded
                 const swapContractBalance = await web3.eth.getBalance(swap.address)
                 swapContractBalance.toString().should.eq('0')

@@ -7,5 +7,5 @@ module.exports = async function (deployer) {
   const accounts = await web3.eth.getAccounts()
   const feeAccount = accounts[0]
   const feePercent = 10
-  await deployer.deploy(Crowdfunder, mainnetDai, feeAccount, feePercent)
+  await deployer.deploy(Crowdfunder, mainnetDai, mainnetWeth, feeAccount, feePercent)
 };
