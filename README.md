@@ -1,28 +1,114 @@
 # decentralized-crowdfunding-app
-A decentralized crowdfunding application named "Make it Happen". It is powered by IPFS and Ethereum smart contracts and interacts with a mock DAI stable coin.
 
-**Overview of the protocol:**
+A decentralized "all or nothing" crowdfunding application named "Make it Happen". It is powered by IPFS and Ethereum smart contracts. It interacts with the DAI stable coin to accept payments and the Uniswap to give users the option to pay with DAI using ETH. 
 
-Funding for every project is all or nothing, meaning that creators won’t receive any funds that their supporters contributed to their project unless it meets its funding goal. The funding goal is set by the creator of the project. When creating a new project, the creator sets how much money they need to raise and how much time they have to raise it. The project length is set in day long time increments and the project can’t last longer than 60 days. Creators also can’t contribute funds to their own projects. 
+### Overview of the protocol:
 
-Every project also has a name, description and image. The name and description are stored on the blockchain directly while the images themselves are stored on IPFS and the reference to those images are stored on the blockchain. 
+The main contract, Crowdfunder.sol has an external make project function that generates new Project.sol child contracts. These contracts are what hold the collected funds for every respective crowdfunding project. Project.sol only accepts the DAI stable coin as payment so that creators can feel confident that the funding goal they set for their projects will maintain equal value. The only address that can call Project.sol functions is the parent Crowdfunder.sol contract.
 
-If a project meets its funding goal, creators can claim their collected funds for a fee. The fee amount is equal to the collected project funds multiplied by the fee percent and is taken out of the collected funds and transferred to a fee account. This fee account is set by the deployer of the smart contracts.
+Funding for every project is all or nothing, meaning that project creators won’t receive any funds from their supporters unless their project meets its predefined funding goal. The funding goal is set by the creator of the project. When creating a new project, the creator sets how much money they need to raise and how much time they have to raise it. The project length can’t last longer than 60 days. Creators also can’t contribute funds to their own projects. 
+
+Every project also has a name, description and image associated with it. The name and description are stored on the blockchain directly while the images themselves are stored on IPFS and the reference to those images are stored on the blockchain. 
+
+If a project meets its funding goal, creators can claim their collected funds for a fee. The fee amount is equal to the collected project funds multiplied by the fee percent and is taken out of the collected funds and transferred to a fee account. This fee account is set by the deployer of the Crowdfunder.sol contract.
 
 If, however, a project fails to meet its funding goal, supporters can claim a refund for the total amount they contributed to the project. 
 
-**Overview of the user interface:**
+### Overview of the user interface:
 
-The navbar contains the name of the application, followed by the address of the account connected to the app and then that accounts dai balance. 
+The navbar contains the name of the application, the user's dai balance and the address of the account connected to the app.
+The content of the UI is broken up into 4 different components: Discover, My Contributions, Transactions and My Projects.
 
-The content of the UI is broken up into five different components: Discover, My Contributions, Transactions, My Projects and Create Project.
+**Discover**
 
-The Discover component lists all the open projects that weren’t created by the user. Each project is represented by a card component with the card header displaying the creator's account address. The card content contains an unordered list element. The first listed element displays all the qualitative data such as the project's image, name and description. The second listed element displays all the quantitative data such as the project's funding information, number of supporters and time left. Lastly, the third listed element contains an input field and a button titled “Contribute” that users can use to contribute however much they would like to that particular project.  
+The Discover component lists all the open projects that weren’t created by the user. Each project is represented by a card component with the card header displaying the creator's account address. The card content contains an unordered list element. The first listed element displays all the qualitative data such as the project's image, name and description. The second listed element displays all the quantitative data such as the project's funding information, number of supporters and time left. Lastly, the third listed element contains an input field and a button titled “Contribute” that users can use to contribute however much DAI they would like to that particular project. If a user wants pay with ETH, they can choose to contribute DAI using their ETH by toggling the pay with ETH button located in the header of the Discover component. This button is toggled on by default if the users DAI balance is equal to 0. When its on, the user can type in the amount of DAI they want to contribute in the input field and right below it the approximate cost in ETH to execute that swap is displayed. 
 
-The My Contributions component contains all of the user's contributions divided into 3 separate tabs: Pending Refund, Held and Released. Each tab contains a table that lists each contribuition within a table row that shows the name of the project its associated with, its amount, its supporter number and its timestamp. Each project name is color coded according to the status of the project: blue for open, red for failed, yellow for pending transfer, green for successful and grey for cancelled. Clicking on any of the table rows will trigger a popover that displays all the relevant information about the project in the same format as the projects listed in the disover tab. The Pending Refund tab contains all the contributions that are refundable becuase the project it supported either failed or cancelled. This tab also contains a “Refund All” button that is located above the contributions table that triggers all the contributions listed to be refunded back to the users wallet, thus clearing the Pending Refunds tab of content for the time being. The Held tab contains all the contributions that are locked in a particular project until it meets some condition. This would include all the contributions to projects that are open or pending transfer. The Released tab contains all the contributions that have been released from the crowdfunding contract. These include the contributions that have been refunded by the supporter or part of the collected contributions of a successful project that was claimed by its creator. 
+**My Contributions**
 
-The Transactions component contains all the transactions divided into 3 seperate tabs: Transfers, Contributions and Refunds. Each tab contains a table that lists each transaction within a table row that shows the name of the project its associated with, its amount and its timestamp. As with the My Contributions component, each project name is color coded according to the status of the project. The table in the Transfers tab also shows the fee amount. Clicking on a table row, like with My Contributions, will trigger a popover that displays the project associated that transaction. 
+The My Contributions component contains all of the user's contributions divided into 3 separate tabs: Pending Refund, Held and Released. Each tab contains a table that lists each contribuition within a table row that shows the name of the project its associated with, its amount, its supporter number and its timestamp. Each project name is color coded according to the status of the project: blue for open, red for failed, yellow for pending disburement, green for successful and grey for cancelled. Clicking on any of the table rows will trigger a popover that displays all the relevant information about the project in the same format as the projects listed in the Disover component. The Pending Refund tab contains all the contributions that are refundable becuase the project it supported either failed or cancelled. The Held tab contains all the contributions that are locked in a particular project until it meets some condition. This would include all the contributions to projects that are open or pending transfer. The Released tab contains all the contributions that have been released from the crowdfunding contract. These include the contributions that were refunded or disbured. 
 
+**Transactions**
+
+The Transactions component contains all the transactions divided into 3 seperate tabs: Disbursement, Contributions and Refunds. Each tab contains a table that lists each transaction within a table row that shows the name of the project its associated with, its amount and its timestamp. As with the My Contributions component, each project name is color coded according to the status of the project. The table in the Disburesement tab also shows the fee amount. Clicking on a table row, like with My Contributions, will trigger a popover that displays the project associated with that transaction. 
+
+**My Projects**
+
+Lastly the My Projects component displays all of the users projects. You can choose to view all projects or just the projects that are open, closed or pending disbursement using the view drop down button at the top of the component. Users can cancel any open project by pressing the cancel project button. If a user makes a project that does get successfully funded, than that user can claim the collected funds by pressing the disburse project funds button. Next to the view tab is the new tab which navigates users to a form which they can fill out to create a new project. 
+
+### Usage
+You neeed to install [Metamask Wallet](https://metamask.io/) extenstion into your browser and connect it to the app. Once connected, your address will show on the top navigation bar. Follow the Metamask prompts to complete transactions on the Dapp. 
+
+### Tools and Tech Stack
+
+* [Uniswap Protocol](https://uniswap.org/) - decenetralized exchange
+* [Maker Dao](https://makerdao.com/en/) - protocol that birthed the DAI stable coin
+* [Truffle](https://www.trufflesuite.com/) - development framework
+* [React](https://reactjs.org/) - front end framework
+* [React Redux](https://react-redux.js.org/) - state container 
+* [Solidity](https://docs.soliditylang.org/en/v0.8.10/) - ethereum smart contract language
+* [Ganache](https://www.trufflesuite.com/ganache) - local blockchain development
+* [Web3](https://web3js.readthedocs.io/en/v1.5.2/) - library that interacts with ethereum nodes 
+* [JavaScript](https://www.javascript.com/) - handle front end logic and testing smart contracts
+* [IPFS](https://ipfs.io/) - decentralized file storage system
+* [Infura](https://infura.io/) - connection to IPFS and ethereum networks 
+* [Open Zeppelin](https://infura.io/) - smart contract libraries and test helpers 
+### Preconfiguration, Installation and Running project locally 
+
+You will need node installed, preferably version 17.0.1
+
+1. Clone repository 
+```sh
+$ git clone https://github.com/ethan-crypto/decentralized-crowdfunding-app.git
+```
+
+2. Enter project directory and install dependancies
+```sh
+$ cd decentralized-crowdfunding-app
+$ npm install 
+```
+
+3. Install truffle globally (preferrably truffle@v5.3.14)
+```sh
+$ npm install -g truffle
+```
+
+4. Install ganache globally 
+```sh
+$ npm install -g ganache-cli
+```
+
+5. Run local blockchain as a fork of Ethereum mainnet using ganache-cli and Infura. 
+Allows us to work with the state of mainnet and deployed contracts on mainnet
+Go to infura create a new project and copy the mainnet URL 
+e.g Mainnet URL https://mainnet.infura.io/v3/11111111111111111
+```sh
+$ ganache-cli -f https://mainnet.infura.io/v3/11111111111111111
+
+```
+Above should run local blockchain with ganache. 
+Ensure truffle-config.js networks config is your Ganache port. 
+By default it should be host: 127.0.0.1 and port: 8545 
+
+6. Connect your ganache addresses to Metamask! 
+Copy private Key of the addresses in ganache and import to Metamask
+Connect your metamask to network Localhost 8545
+
+### Migrating contracts and Testing
+
+1. To compile contracts e.g you make changes to contracts
+```sh
+$ truffle compile 
+```
+
+2. Migrate contracts to local running instance fork
+```sh
+$ truffle migrate --reset 
+```
+
+3. To test contracts 
+```sh
+$ truffle test
+```
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
@@ -93,3 +179,7 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+License
+----
+MIT

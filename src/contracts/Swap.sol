@@ -1,4 +1,4 @@
-//SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 
 // This contract is not used by my application. It is only used to seed ganache accounts with Dai for testing purposes. 
 pragma solidity ^0.8.1;

@@ -24,7 +24,7 @@ import {
   loadFeePercent,
   makeProject
 } from '../store/interactions'
-import CreateProjectForm from './CreateProjectForm'
+import NewProject from './NewProject'
 
 
 const renderButton = (project, props) => {
@@ -82,7 +82,7 @@ function renderMyProjectsContent(props, selectedKey) {
       return renderMyProjects(props, props.myClosedProjects)
     case 'New':
       return (
-        <CreateProjectForm 
+        <NewProject 
           dispatch={dispatch}
           onSubmit= { 
           (project) => { makeProject(dispatch, web3, project, buffer, account, crowdfunder) }
