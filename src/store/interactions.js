@@ -126,9 +126,10 @@ export const loadCrowdfunder = async (web3, networkId, dispatch) => {
 
 export const loadDaiBalance = async (dai, dispatch, account) => {
 	const daiBalance = await dai.methods.balanceOf(account).call()
+	console.log(daiBalance)
 	dispatch(daiBalanceLoaded(daiBalance))
 	// Set default payment method
-	dispatch(defaultPaymentMethodSet(daiBalance === 0))
+	dispatch(defaultPaymentMethodSet(daiBalance.toString() === '0'))
 }
 
 export const loadAllCrowdfunderData = async (crowdfunder, deployment, dispatch) => {
