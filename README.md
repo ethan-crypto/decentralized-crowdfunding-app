@@ -1,6 +1,6 @@
 # decentralized-crowdfunding-app
 
-A decentralized "all or nothing" crowdfunding application named "Make it Happen". It is powered by IPFS and Ethereum smart contracts. It interacts with the DAI stable coin to accept payments and the Uniswap to give users the option to pay with DAI using ETH. 
+A decentralized "all or nothing" crowdfunding application named "Make it Happen". It is powered by IPFS and Ethereum smart contracts. It interacts with the DAI stable coin to accept payments and Uniswap to give users the option to pay with DAI using ETH. 
 
 ### Overview of the protocol:
 
