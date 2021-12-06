@@ -12,7 +12,7 @@ const wait = (seconds) => {
 	return new Promise(resolve => setTimeout(resolve, milliseconds))
 }
 const ropstenDai = "0xad6d458402f60fd3bd25163575031acdce07538d"
-const THIRTY_DAYS = time.duration.days(30)
+const THIRTY_DAYS = time.duration.days(100)
 const ONE_DAY = time.duration.days(1)
 const FOURTEEN_DAYS = time.duration.days(14)
 
@@ -56,7 +56,7 @@ module.exports = async function (callback) {
 		// First three accounts use the swap contract to convert a certain amount of Eth into 1000 Dai each
 		for (let i = 0; i < 3; i++) {
 			await swap.convertEthToExactDai(toWei(300), futureTime(1000), { value: toWei(1.3), from: accounts[i] })
-			console.log(`${accounts[i]} swaps a certain amount of eth for exactly 1000 dai`)
+			console.log(`${accounts[i]} swaps a certain amount of eth for exactly 300 dai`)
 		}
 		// Set up exchange users
 		const user1 = accounts[0]
@@ -82,7 +82,7 @@ module.exports = async function (callback) {
 		amount = 40
 		await dai.methods.approve(projectAddress, toWei(amount)).send({ from: user2 })
 		console.log(`Approved ${amount} dai from ${user2}`)
-		await crowdfunder.contribute(projectId, toWei(amount), futureTime(30), { from: user2 })
+		await crowdfunder.contribute(projectId, toWei(amount), futureTime(100), { from: user2 })
 		console.log(`${user2} contributes ${amount} dai to ${user1} project`)
 
 		await wait(1)
@@ -91,7 +91,7 @@ module.exports = async function (callback) {
 		amount = 30
 		await dai.methods.approve(projectAddress, toWei(amount)).send({ from: user3 })
 		console.log(`Approved ${amount} dai from ${user3}`)
-		await crowdfunder.contribute(projectId, toWei(amount), futureTime(30), { from: user3 })
+		await crowdfunder.contribute(projectId, toWei(amount), futureTime(100), { from: user3 })
 		console.log(`${user3} contributes ${amount} dai to ${user1} project`)
 
 		// User 2 makes project 
@@ -106,7 +106,7 @@ module.exports = async function (callback) {
 		amount = 50
 		await dai.methods.approve(projectAddress, toWei(amount)).send({ from: user3 })
 		console.log(`Approved ${amount} dai from ${user3}`)
-		await crowdfunder.contribute(projectId, toWei(amount), futureTime(30), { from: user3 })
+		await crowdfunder.contribute(projectId, toWei(amount), futureTime(100), { from: user3 })
 		console.log(`${user3} contributes ${amount} dai to ${user2} project`)
 
 		await wait(1)
@@ -115,7 +115,7 @@ module.exports = async function (callback) {
 		amount = 40
 		await dai.methods.approve(projectAddress, toWei(amount)).send({ from: user1 })
 		console.log(`Approved ${amount} dai from ${user1}`)
-		await crowdfunder.contribute(projectId, toWei(amount), futureTime(30), { from: user1 })
+		await crowdfunder.contribute(projectId, toWei(amount), futureTime(100), { from: user1 })
 		console.log(`${user1} contributes ${amount} dai to ${user2} project`)
 
 		// User 3 makes project 
@@ -130,7 +130,7 @@ module.exports = async function (callback) {
 		amount = 70
 		await dai.methods.approve(projectAddress, toWei(amount)).send({ from: user1 })
 		console.log(`Approved ${amount} dai from ${user1}`)
-		await crowdfunder.contribute(projectId, toWei(amount), futureTime(30), { from: user1 })
+		await crowdfunder.contribute(projectId, toWei(amount), futureTime(100), { from: user1 })
 		console.log(`${user1} contributes ${amount} dai to ${user3} project`)
 
 		await wait(1)
@@ -139,7 +139,7 @@ module.exports = async function (callback) {
 		amount = 60
 		await dai.methods.approve(projectAddress, toWei(amount)).send({ from: user2 })
 		console.log(`Approved ${amount} dai from ${user2}`)
-		await crowdfunder.contribute(projectId, toWei(amount), futureTime(30), { from: user2 })
+		await crowdfunder.contribute(projectId, toWei(amount), futureTime(100), { from: user2 })
 		console.log(`${user2} contributes ${amount} dai to ${user3} project`)
 
 		/////////////////////////////////////////////////////////////
@@ -158,7 +158,7 @@ module.exports = async function (callback) {
 		amount = 120
 		await dai.methods.approve(projectAddress, toWei(amount)).send({ from: user1 })
 		console.log(`Approved ${amount} dai from ${user1}`)
-		await crowdfunder.contribute(projectId, toWei(amount), futureTime(30), { from: user1 })
+		await crowdfunder.contribute(projectId, toWei(amount), futureTime(100), { from: user1 })
 		console.log(`${user1} contributes ${amount} dai to ${user3} project`)
 
 
@@ -183,7 +183,7 @@ module.exports = async function (callback) {
 		amount = 50
 		await dai.methods.approve(projectAddress, toWei(amount)).send({ from: user2 })
 		console.log(`Approved ${amount} dai from ${user2}`)
-		await crowdfunder.contribute(projectId, toWei(amount), futureTime(30), { from: user2 })
+		await crowdfunder.contribute(projectId, toWei(amount), futureTime(100), { from: user2 })
 		console.log(`${user2} contributes ${amount} dai to ${user1} project`)
 
 		await wait(1)
@@ -192,7 +192,7 @@ module.exports = async function (callback) {
 		amount = 60
 		await dai.methods.approve(projectAddress, toWei(amount)).send({ from: user3 })
 		console.log(`Approved ${amount} dai from ${user3}`)
-		await crowdfunder.contribute(projectId, toWei(amount), futureTime(30), { from: user3 })
+		await crowdfunder.contribute(projectId, toWei(amount), futureTime(100), { from: user3 })
 		console.log(`${user3} contributes ${amount} dai to ${user1} project`)
 
 		await wait(5)
@@ -228,7 +228,7 @@ module.exports = async function (callback) {
 		amount = 50
 		await dai.methods.approve(projectAddress, toWei(amount)).send({ from: user2 })
 		console.log(`Approved ${amount} dai from ${user2}`)
-		await crowdfunder.contribute(projectId, toWei(amount), futureTime(30), { from: user2 })
+		await crowdfunder.contribute(projectId, toWei(amount), futureTime(100), { from: user2 })
 		console.log(`${user2} contributes ${amount} dai to ${user1} project`)
 
 		// User 1 cancels their project
@@ -255,7 +255,7 @@ module.exports = async function (callback) {
 		amount = 40
 		await dai.methods.approve(projectAddress, toWei(amount)).send({ from: user1 })
 		console.log(`Approved ${amount} dai from ${user1}`)
-		await crowdfunder.contribute(projectId, toWei(amount), futureTime(30), { from: user1 })
+		await crowdfunder.contribute(projectId, toWei(amount), futureTime(100), { from: user1 })
 		console.log(`${user1} contributes ${amount} dai to ${user2} project`)
 
 		/////////////////////////////////////////////////////////////
@@ -274,7 +274,7 @@ module.exports = async function (callback) {
 		amount = 20
 		await dai.methods.approve(projectAddress, toWei(amount)).send({ from: user1 })
 		console.log(`Approved ${amount} dai from ${user1}`)
-		await crowdfunder.contribute(projectId, toWei(amount), futureTime(30), { from: user1 })
+		await crowdfunder.contribute(projectId, toWei(amount), futureTime(100), { from: user1 })
 		console.log(`${user1} contributes ${amount} dai to ${user2} project`)
 
 	}
