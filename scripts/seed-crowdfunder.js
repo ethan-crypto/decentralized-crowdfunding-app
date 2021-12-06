@@ -12,7 +12,7 @@ const wait = (seconds) => {
 	return new Promise(resolve => setTimeout(resolve, milliseconds))
 }
 const ropstenDai = "0xad6d458402f60fd3bd25163575031acdce07538d"
-const THIRTY_DAYS = time.duration.days(100)
+const THIRTY_DAYS = time.duration.days(30)
 const ONE_DAY = time.duration.days(1)
 const FOURTEEN_DAYS = time.duration.days(14)
 
@@ -46,14 +46,14 @@ module.exports = async function (callback) {
 		console.log('Crowdfunder fetched', crowdfunder.address)
 
 		// Fetch the deployed swap
-		const swap = await Swap.deployed()
-		console.log('Swap fetched', swap.address)
+		//const swap = await Swap.deployed()
+		//console.log('Swap fetched', swap.address)
 
 		//Fetch web3 instance of deployed dai
 		const dai = new web3.eth.Contract(splicedABI, ropstenDai)
 
 		await wait(1)
-		// First three accounts use the swap contract to convert a certain amount of Eth into 1000 Dai each
+		//First three accounts use the swap contract to convert a certain amount of Eth into 1000 Dai each
 		for (let i = 0; i < 3; i++) {
 			await swap.convertEthToExactDai(toWei(300), futureTime(1000), { value: toWei(1.3), from: accounts[i] })
 			console.log(`${accounts[i]} swaps a certain amount of eth for exactly 300 dai`)
@@ -195,7 +195,7 @@ module.exports = async function (callback) {
 		await crowdfunder.contribute(projectId, toWei(amount), futureTime(100), { from: user3 })
 		console.log(`${user3} contributes ${amount} dai to ${user1} project`)
 
-		await wait(5)
+		await wait(1)
 
 
 
@@ -265,7 +265,7 @@ module.exports = async function (callback) {
 		// User 2 makes project
 		description = "I need 20 dai to help fund my new album that I hope to release in two weeks"
 		amount = 20
-		result = await crowdfunder.makeProject(name, description, imgHashes[0], toWei(amount), futureTime(15), { from: user2 })
+		result = await crowdfunder.makeProject(name, description, imgHashes[0], toWei(amount), futureTime(ONE_DAY), { from: user2 })
 		console.log(`Made project from ${user2}`)
 
 		// User 1 approves dai and contributes enough funds to user 2's project to fully fund it

@@ -72,8 +72,9 @@ class Discover extends Component {
                         onBlur={event => {
                           event.preventDefault()
                           if (!event.currentTarget.contains(event.relatedTarget)) {
-                            document.getElementById(project.id).value = ''
-                          }
+                            quoteEthCost(dispatch, web3, '', crowdfunder)
+                            dispatch(contributionAmountChanged('', project.id)) 
+                          } ; 
                         }}
                       >
                         <div className="col-sm mx-sm-auto pe-sm-1 mb-sm-auto py-2">
