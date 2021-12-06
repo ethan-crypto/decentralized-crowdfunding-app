@@ -182,10 +182,11 @@ export const loadAllCrowdfunderData = async (crowdfunder, deployment, dispatch) 
 
 }
 
-export const subscribeToEvents = async (crowdfunder, dispatch) => {
+export const subscribeToEvents = async (crowdfunder, dai, account, dispatch) => {
 
 	crowdfunder.events.Contribution({}, (error, event) => {
 		dispatch(contributedToProject(event.returnValues))
+		loadDaiBalance(dai,dispatch,account)
 	})
 	crowdfunder.events.ProjectMade({}, (error, event) => {
 		dispatch(projectMade(event.returnValues))
@@ -195,9 +196,11 @@ export const subscribeToEvents = async (crowdfunder, dispatch) => {
 	})
 	crowdfunder.events.Disburse({}, (error, event) => {
 		dispatch(projectFundsDisbursed(event.returnValues))
+		loadDaiBalance(dai,dispatch,account)
 	})
 	crowdfunder.events.Refund({}, (error, event) => {
 		dispatch(contributionRefunded(event.returnValues))
+		loadDaiBalance(dai,dispatch,account)
 	})
 }
 

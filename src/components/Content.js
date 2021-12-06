@@ -7,6 +7,8 @@ import MyContributions from './MyContributions'
 import Transactions from './Transactions'
 import { 
   crowdfunderSelector,
+  daiSelector,
+  accountSelector,
   web3Selector,
   deploymentSelector
  } from '../store/selectors'
@@ -111,10 +113,9 @@ class Content extends Component {
     this.loadBlockchainData(this.props)
   }
   async loadBlockchainData(props) {
-    const { dispatch, crowdfunder, deployment } = props
+    const { dispatch, crowdfunder, deployment, dai, account } = props
     await loadAllCrowdfunderData(crowdfunder, deployment, dispatch)
-    await subscribeToEvents(crowdfunder, dispatch)
-    
+    await subscribeToEvents(crowdfunder, dai, account, dispatch)
   }
 
   render() {
@@ -142,6 +143,8 @@ class Content extends Component {
 function mapStateToProps(state) {
   return {
     crowdfunder: crowdfunderSelector(state),
+    dai: daiSelector(state),
+    account: accountSelector(state),
     web3: web3Selector(state),
     deployment: deploymentSelector(state)
   }
