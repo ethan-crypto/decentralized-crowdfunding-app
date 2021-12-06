@@ -10,7 +10,7 @@ import {
   daiSelector,
   accountSelector,
   web3Selector,
-  deploymentSelector
+  deploymentBlockSelector
  } from '../store/selectors'
 import { 
   loadAllCrowdfunderData, 
@@ -113,8 +113,8 @@ class Content extends Component {
     this.loadBlockchainData(this.props)
   }
   async loadBlockchainData(props) {
-    const { dispatch, crowdfunder, deployment, dai, account } = props
-    await loadAllCrowdfunderData(crowdfunder, deployment, dispatch)
+    const { dispatch, crowdfunder, deploymentBlock, dai, account } = props
+    await loadAllCrowdfunderData(crowdfunder, deploymentBlock, dispatch)
     await subscribeToEvents(crowdfunder, dai, account, dispatch)
   }
 
@@ -146,7 +146,7 @@ function mapStateToProps(state) {
     dai: daiSelector(state),
     account: accountSelector(state),
     web3: web3Selector(state),
-    deployment: deploymentSelector(state)
+    deploymentBlock: deploymentBlockSelector(state)
   }
 }
 

@@ -21,8 +21,8 @@ const deploymentLoaded = state => get(state, 'crowdfunder.deployment.loaded', fa
 const crowdfunder = state => get(state, 'crowdfunder.contract', false)
 export const crowdfunderSelector = createSelector(crowdfunder, cl => cl)
 
-const deployment = state => get(state, 'crowdfunder.deployment.data', {})
-export const deploymentSelector = createSelector(deployment, dep => dep)
+const deploymentBlock = state => get(state, 'crowdfunder.deployment.data.blockNumber', 'latest')
+export const deploymentBlockSelector = createSelector(deploymentBlock, dep => dep)
 
 const dai = state => get(state, 'dai.contract', false)
 export const daiSelector = createSelector(dai, dl => dl)

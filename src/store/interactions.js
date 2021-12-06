@@ -115,7 +115,7 @@ export const loadCrowdfunder = async (web3, networkId, dispatch) => {
 		//Fetch crowdfunder contract deployment data
 		const deploymentData = await web3.eth.getTransaction(Crowdfunder.networks[networkId].transactionHash)
 		dispatch(deploymentDataLoaded(deploymentData))
-		return crowdfunder
+		return crowdfunder && deploymentData
 	} catch (error) {
 		console.log('Contract not deployed to the current network. Please select another network with Metamask.')
 		return null
@@ -126,44 +126,41 @@ export const loadCrowdfunder = async (web3, networkId, dispatch) => {
 
 export const loadDaiBalance = async (dai, dispatch, account) => {
 	const daiBalance = await dai.methods.balanceOf(account).call()
-	console.log(daiBalance)
 	dispatch(daiBalanceLoaded(daiBalance))
 	// Set default payment method
 	dispatch(defaultPaymentMethodSet(daiBalance.toString() === '0'))
 }
 
-export const loadAllCrowdfunderData = async (crowdfunder, deployment, dispatch) => {
-	// Get the block number where the deployment took place in
-	const startingBlock = deployment.blockNumber
+export const loadAllCrowdfunderData = async (crowdfunder, deploymentBlock, dispatch) => {
 	// Fetch refunds with the "Refund" event stream
-	const refundStream = await crowdfunder.getPastEvents("Refund", { fromBlock: startingBlock, toBlock: 'latest' })
+	const refundStream = await crowdfunder.getPastEvents("Refund", { fromBlock: deploymentBlock, toBlock: 'latest' })
 	// Format refunds
 	const allRefunds = refundStream.map((event) => event.returnValues)
 	// Add refunds to the redux store
 	dispatch(allRefundsLoaded(allRefunds))
 
 	// Fetch contributions with the "Contribution" event stream
-	const contributionStream = await crowdfunder.getPastEvents('Contribution', { fromBlock: startingBlock, toBlock: 'latest' })
+	const contributionStream = await crowdfunder.getPastEvents('Contribution', { fromBlock: deploymentBlock, toBlock: 'latest' })
 	// Format contributions
 	const allContributions = contributionStream.map((event) => event.returnValues)
 	// Add refunds to the redux store
 	dispatch(allContributionsLoaded(allContributions))
 
 	// Fetch cancelled projects with the "Cancel" event stream
-	const cancelStream = await crowdfunder.getPastEvents('Cancel', { fromBlock: startingBlock, toBlock: 'latest' })
+	const cancelStream = await crowdfunder.getPastEvents('Cancel', { fromBlock: deploymentBlock, toBlock: 'latest' })
 	// Format cancelled orders
 	const cancelledProjects = cancelStream.map((event) => event.returnValues)
 	// Add cancelled orders to the redux store
 	dispatch(cancelledProjectsLoaded(cancelledProjects))
 
 	// Fetch successful projects with the "Disburse" event stream
-	const disburseStream = await crowdfunder.getPastEvents('Disburse', { fromBlock: startingBlock, toBlock: 'latest' })
+	const disburseStream = await crowdfunder.getPastEvents('Disburse', { fromBlock: deploymentBlock, toBlock: 'latest' })
 	// Format successfulProjects
 	const successfulProjects = disburseStream.map((event) => event.returnValues)
 	// Add successfulProjects projects to the redux store
 	dispatch(successfulProjectsLoaded(successfulProjects))
 	// Fetch all projects with the "ProjectMade" event stream
-	const projectStream = await crowdfunder.getPastEvents('ProjectMade', { fromBlock: startingBlock, toBlock: 'latest' })
+	const projectStream = await crowdfunder.getPastEvents('ProjectMade', { fromBlock: deploymentBlock, toBlock: 'latest' })
 	// Format all projects
 	const allProjects = await projectStream.map((event) => event.returnValues)
 
