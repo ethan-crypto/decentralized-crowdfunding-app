@@ -15,10 +15,26 @@ import {
   accountSelector
 } from '../store/selectors'
 
+
 class App extends Component {
 
   componentWillMount() {
-    this.loadBlockchainData(this.props.dispatch)
+    this.autoRefresh(this.props.dispatch)
+  }
+
+  async autoRefresh(dispatch){
+    if(typeof window.ethereum !== 'undefined'){
+      window.ethereum.autoRefreshOnNetworkChange = false; //prevent refresing while changing network
+      this.loadBlockchainData(dispatch)
+      /* Case 2 - User switch account */
+      window.ethereum.on('accountsChanged', async (accounts) => {
+        window.location.reload()
+      });
+      /* Case 3 - User switch network */
+      window.ethereum.on('chainChanged', async (chainId) => {
+        window.location.reload()
+      });
+    }
   }
 
   async loadBlockchainData(dispatch) {
