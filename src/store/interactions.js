@@ -30,6 +30,8 @@ import Web3 from 'web3'
 import Crowdfunder from '../abis/Crowdfunder.json'
 import { futureTime } from '../helpers'
 
+const ropstenDai = "0xad6d458402f60fd3bd25163575031acdce07538d"
+
 // spliced ERC20 ABI
 const splicedABI = [
 	// balanceOf
@@ -96,8 +98,7 @@ export const loadAccount = async (web3, dispatch) => {
 export const loadDai = async (web3, dispatch) => {
 	try {
 		// Create new web3 dai contract instance
-		const daiAddress = "0x6B175474E89094C44Da98b954EedeAC495271d0F"
-		const dai = new web3.eth.Contract(splicedABI, daiAddress)
+		const dai = new web3.eth.Contract(splicedABI, ropstenDai)
 		dispatch(daiLoaded(dai))
 		return dai
 	} catch (error) {
@@ -182,10 +183,11 @@ export const loadAllCrowdfunderData = async (crowdfunder, deployment, dispatch) 
 
 }
 
-export const subscribeToEvents = async (crowdfunder, dispatch) => {
+export const subscribeToEvents = async (crowdfunder, dai, account, dispatch) => {
 
 	crowdfunder.events.Contribution({}, (error, event) => {
 		dispatch(contributedToProject(event.returnValues))
+		loadDaiBalance(dai,dispatch,account)
 	})
 	crowdfunder.events.ProjectMade({}, (error, event) => {
 		dispatch(projectMade(event.returnValues))
@@ -195,9 +197,11 @@ export const subscribeToEvents = async (crowdfunder, dispatch) => {
 	})
 	crowdfunder.events.Disburse({}, (error, event) => {
 		dispatch(projectFundsDisbursed(event.returnValues))
+		loadDaiBalance(dai,dispatch,account)
 	})
 	crowdfunder.events.Refund({}, (error, event) => {
 		dispatch(contributionRefunded(event.returnValues))
+		loadDaiBalance(dai,dispatch,account)
 	})
 }
 

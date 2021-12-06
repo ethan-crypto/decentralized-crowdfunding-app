@@ -11,7 +11,7 @@ const wait = (seconds) => {
 	const milliseconds = seconds * 1000
 	return new Promise(resolve => setTimeout(resolve, milliseconds))
 }
-const mainnetDai = "0x6B175474E89094C44Da98b954EedeAC495271d0F"
+const ropstenDai = "0xad6d458402f60fd3bd25163575031acdce07538d"
 const THIRTY_DAYS = time.duration.days(30)
 const FOURTEEN_DAYS = time.duration.days(14)
 
@@ -49,12 +49,12 @@ module.exports = async function (callback) {
 		console.log('Swap fetched', swap.address)
 
 		//Fetch web3 instance of deployed dai
-		const dai = new web3.eth.Contract(splicedABI, mainnetDai)
+		const dai = new web3.eth.Contract(splicedABI, ropstenDai)
 
 		await wait(1)
 		// First three accounts use the swap contract to convert a certain amount of Eth into 1000 Dai each
 		for (let i = 0; i < 3; i++) {
-			await swap.convertEthToExactDai(toWei(1000), futureTime(15), { value: toWei(0.4), from: accounts[i] })
+			await swap.convertEthToExactDai(toWei(1000), futureTime(1000), { value: toWei(3.5), from: accounts[i] })
 			console.log(`${accounts[i]} swaps a certain amount of eth for exactly 1000 dai`)
 		}
 		// Set up exchange users

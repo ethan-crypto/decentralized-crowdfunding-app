@@ -1,6 +1,6 @@
 import { web3 } from '@openzeppelin/test-helpers/src/setup'
 import { expect } from 'chai'
-import { EVM_REVERT, futureTime, mainnetDai, mainnetWeth, toWei, fromWei, wait } from './helpers'
+import { EVM_REVERT, futureTime, ropstenDai, ropstenWeth, toWei, fromWei, wait } from './helpers'
 const { expectRevert, time } = require('@openzeppelin/test-helpers')
 const Crowdfunder = artifacts.require("Crowdfunder")
 const Project = artifacts.require("Project")
@@ -24,15 +24,15 @@ contract('Crowdfunder', ([deployer, feeAccount, user1, user2, user3]) => {
 	let crowdfunder, crowdfunderRef, dai, swap, swapRef, deadline
 	let timeIncrease = 0
 	beforeEach(async () => {
-		swap = await Swap.new(mainnetDai, mainnetWeth)
-		crowdfunder = await Crowdfunder.new(mainnetDai, mainnetWeth, feeAccount, feePercent)
+		swap = await Swap.new(ropstenDai, ropstenWeth)
+		crowdfunder = await Crowdfunder.new(ropstenDai, ropstenWeth, feeAccount, feePercent)
 
 		deadline = futureTime(30 + timeIncrease)
 		swap.convertEthToExactDai(toWei(100), deadline, { value: toWei(0.4), from: user1 });
 		swap.convertEthToExactDai(toWei(100), deadline, { value: toWei(0.4), from: user2 });
 		swap.convertEthToExactDai(toWei(100), deadline, { value: toWei(0.4), from: user3 });
 
-		dai = new web3.eth.Contract(IERC20.abi, mainnetDai)
+		dai = new web3.eth.Contract(IERC20.abi, ropstenDai)
 		crowdfunderRef = new web3.eth.Contract(Crowdfunder.abi, crowdfunder.address)
 		swapRef = new web3.eth.Contract(Swap.abi, swap.address)	
 	})
@@ -49,15 +49,15 @@ contract('Crowdfunder', ([deployer, feeAccount, user1, user2, user3]) => {
 		})
 		it('tracks the dai address', async () => {
 			result = await crowdfunder.dai()
-			result.toString().should.equal(mainnetDai.toString())
+			result.toString().should.equal(ropstenDai.toString())
 		})
 		it("tracks the poolFee, dai address and weth address", async () => {
 			result = await crowdfunder.poolFee();
 			result.toString().should.equal(poolFee);
 			result = await crowdfunder.dai();
-			result.toString().should.equal(mainnetDai)
+			result.toString().should.equal(ropstenDai)
 			result = await crowdfunder.weth();
-			result.toString().should.equal(mainnetWeth)
+			result.toString().should.equal(ropstenWeth)
 		})
 		it("tracks the uniswap swapRouter and quoter contract addresses", async () => {
 			result = await crowdfunder.swapRouter();
@@ -111,7 +111,7 @@ contract('Crowdfunder', ([deployer, feeAccount, user1, user2, user3]) => {
 				const timestamp = await project.methods.timestamp().call()
 				timestamp.toString().length.should.be.at.least(1, 'timestamp is not present')
 				const daiAddress = await project.methods.dai().call()
-				daiAddress.should.equal(mainnetDai, 'dai address is incorrect')
+				daiAddress.should.equal(ropstenDai, 'dai address is incorrect')
 			})
 			it('emits a "ProjectMade" event', () => {
 				const log = result.logs[0]

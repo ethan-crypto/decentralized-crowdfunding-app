@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { futureTime, toWei, fromWei, mainnetDai, mainnetWeth } from './helpers'
+import { futureTime, toWei, fromWei, ropstenDai, ropstenWeth } from './helpers'
 const { expectRevert, time } = require('@openzeppelin/test-helpers')
 const Swap = artifacts.require("Swap")
 const IERC20 = artifacts.require("IERC20")
@@ -15,7 +15,7 @@ contract("Swap",([deployer, user1]) => {
     const quoter = "0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6"
     let swap, swapRef
     beforeEach(async() => {
-        swap = await Swap.new(mainnetDai, mainnetWeth)
+        swap = await Swap.new(ropstenDai, ropstenWeth)
         swapRef = new web3.eth.Contract(Swap.abi, swap.address)
     })
     describe("deployment", () => {
@@ -24,9 +24,9 @@ contract("Swap",([deployer, user1]) => {
             result = await swap.poolFee();
             result.toString().should.equal(poolFee);
             result = await swap.dai();
-            result.toString().should.equal(mainnetDai)
+            result.toString().should.equal(ropstenDai)
             result = await swap.weth();
-            result.toString().should.equal(mainnetWeth)
+            result.toString().should.equal(ropstenWeth)
         })
         it("tracks the uniswap swapRouter and quoter contract addresses", async() => {
             result = await swap.swapRouter();
@@ -60,7 +60,7 @@ contract("Swap",([deployer, user1]) => {
             let result
             beforeEach(async() => {
                 // load dai contract
-                daiRef = new web3.eth.Contract(IERC20.abi, mainnetDai)
+                daiRef = new web3.eth.Contract(IERC20.abi, ropstenDai)
     
                 // start Ether and DAI balance before swap
                 ethBalance = await web3.eth.getBalance(user1) //BN
