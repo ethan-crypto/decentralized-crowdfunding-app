@@ -65,23 +65,6 @@ const splicedABI = [
 const { create } = require('ipfs-http-client')
 const ipfs = create({ host: 'ipfs.infura.io', port: 5001, protocol: 'https' }) // leaving out the arguments will default to these values
 
-// async loadBlockchainData(props) {
-//     /* Case 1, User connect for 1st time */
-//     if(typeof window.ethereum !== 'undefined'){
-//       window.ethereum.autoRefreshOnNetworkChange = false; //prevent refresing while chaning network
-//       this.update(props)
-//       /* Case 2 - User switch account */
-    //   window.ethereum.on('accountsChanged', async (accounts) => {
-    //     this.update(props)
-    //   });
-
-//       /* Case 3 - User switch network */
-    //   window.ethereum.on('chainChanged', async (chainId) => {
-    //     this.update(props)
-    //   });
-//     }
-//   }
-
 export const loadWeb3 = async (dispatch) => {
 	if (window.ethereum) {
 		window.web3 = new Web3(window.ethereum)
