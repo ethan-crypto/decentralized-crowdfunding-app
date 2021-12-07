@@ -77,9 +77,6 @@ export const loadWeb3 = async (dispatch) => {
 		dispatch(web3Loaded(window.web3))
 		return window.web3
 	}
-	else {
-		window.alert('Non-Ethereum browser detected. You should consider trying MetaMask!')
-	}
 }
 
 export const loadAccount = async (web3, dispatch) => {
@@ -118,7 +115,7 @@ export const loadCrowdfunder = async (web3, networkId, dispatch) => {
 		dispatch(deploymentDataLoaded(deploymentData))
 		return crowdfunder && deploymentData
 	} catch (error) {
-		console.log('Contract not deployed to the current network. Please select another network with Metamask.')
+		console.log('Contract not deployed to the current network. Please select ropsten network with Metamask.')
 		return null
 	}
 
