@@ -19,7 +19,7 @@ class AppNavbar extends Component {
           <Navbar.Collapse className="justify-content-end navbar-dark">
             <Nav className ="me-auto">
               <Nav.Link variant="navbar-dark" href="https://oasis.app/">
-                DAI Balance:<strong> {this.props.daiBalance?`$${this.props.daiBalance}`:null} </strong>
+                DAI Balance:<strong> {this.props.account?`$${this.props.daiBalance}`:null} </strong>
               </Nav.Link>
             </Nav> 
             <Nav>

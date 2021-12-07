@@ -52,7 +52,7 @@ class App extends Component {
     }
     const crowdfunder = await loadCrowdfunder(web3, networkId, dispatch)
     if(!crowdfunder) {
-      window.alert('Crowdfunder smart contract not detected on the current network. Please select another network with Metamask.')
+      window.alert('Crowdfunder smart contract not detected on the current network. Please select ropsten network with Metamask.')
     }
     await loadDaiBalance(dai, dispatch, account)
   }
