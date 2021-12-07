@@ -4,6 +4,10 @@
   "description": "Crowdfunding App",
   "author": "tylercemer@gmail.com",
   "homepage": ".",
+  "engines": {
+    "npm": "8.1.0",
+    "node": "v16.13.0"
+  },
   "dependencies": {
     "@openzeppelin/contracts": "^4.3.3",
     "@truffle/hdwallet-provider": "^2.0.0",
