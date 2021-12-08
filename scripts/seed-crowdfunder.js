@@ -45,9 +45,9 @@ module.exports = async function (callback) {
 		const crowdfunder = await Crowdfunder.deployed()
 		console.log('Crowdfunder fetched', crowdfunder.address)
 
-		// Fetch the deployed swap
-		//const swap = await Swap.deployed()
-		//console.log('Swap fetched', swap.address)
+		 //Fetch the deployed swap
+		const swap = await Swap.deployed()
+		console.log('Swap fetched', swap.address)
 
 		//Fetch web3 instance of deployed dai
 		const dai = new web3.eth.Contract(splicedABI, ropstenDai)
