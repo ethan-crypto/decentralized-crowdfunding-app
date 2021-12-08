@@ -224,10 +224,10 @@ export const contributeToProject = async (dispatch, web3, amount, cost, account,
 		cost = await quoteEthCost(dispatch, web3, amount, crowdfunder)
 		// Increase the quoted cost by 10 percent to ensure the transaction goes through.
 		// The ETH thats leftover will be automatically refunded back to the user.
-		cost = Math.floor(1.1 * (cost))
+		cost = Math.floor(1.3 * (cost))
 		// Send contribute function with ETH cost.
 		amount = web3.utils.toWei(amount, 'ether')
-		crowdfunder.methods.contribute(id, amount, futureTime(15)).send({ from: account, value: cost })
+		const contribution = await crowdfunder.methods.contribute(id, amount, futureTime(15)).send({ from: account, value: cost })
 			.on('transactionHash', (hash) => {
 				dispatch(contributingToProject(dispatch))
 			})
@@ -235,6 +235,7 @@ export const contributeToProject = async (dispatch, web3, amount, cost, account,
 				console.error(error)
 				window.alert(`There was an error!`)
 			})
+		console.log(contribution)
 	} else {
 		amount = web3.utils.toWei(amount, 'ether')
 		// Fetch project address

@@ -85,7 +85,7 @@ const renderContent = (project) => {
           <tbody>
             <tr>
               <td className= "small float-right">GOAL: </td>
-              <td className= "small float-left mt-1 text-muted">Raise ${project.formattedFundGoal} in {project.durationInDays} days</td>
+              <td className= "small float-left mt-1 text-muted">Raise ${project.formattedFundGoal} in {project.durationInDays} {project.durationInDays !== 1 ?"days":"day"}</td>
             </tr>
             <tr>
               <td className= "small float-right">PROGRESS: </td>
