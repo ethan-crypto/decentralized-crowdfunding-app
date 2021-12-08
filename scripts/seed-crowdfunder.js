@@ -13,6 +13,7 @@ const wait = (seconds) => {
 }
 const mainnetDai = "0x6B175474E89094C44Da98b954EedeAC495271d0F"
 const THIRTY_DAYS = time.duration.days(30)
+const ONE_DAY = time.duration.days(1)
 const FOURTEEN_DAYS = time.duration.days(14)
 
 // spliced ERC20 ABI
@@ -148,7 +149,7 @@ module.exports = async function (callback) {
 		// User 3 makes project 
 		description = "I need 300 dai to help fund my new album that I hope to release today"
 		amount = 300
-		result = await crowdfunder.makeProject(name, description, imgHashes[0], toWei(amount), futureTime(30), { from: user3 })
+		result = await crowdfunder.makeProject(name, description, imgHashes[0], toWei(amount), futureTime(ONE_DAY), { from: user3 })
 		console.log(`Made project from ${user3}`)
 
 		// User 1 approves dai and contributes funds to user 3's project
@@ -164,7 +165,7 @@ module.exports = async function (callback) {
 		// User 2 makes project
 		description = "I need 50 dai to help fund my new album that I hope to release today"
 		amount = 50
-		await crowdfunder.makeProject(name, description, imgHashes[2], toWei(amount), futureTime(30), { from: user2 })
+		await crowdfunder.makeProject(name, description, imgHashes[2], toWei(amount), futureTime(ONE_DAY), { from: user2 })
 		console.log(`Made project from ${user2}`)
 
 
@@ -173,7 +174,7 @@ module.exports = async function (callback) {
 		// User 1 makes project 
 		description = "I need 200 dai to help fund my new album that I hope to release today"
 		amount = 200
-		result = await crowdfunder.makeProject(name, description, imgHashes[1], toWei(amount), futureTime(20), { from: user1 })
+		result = await crowdfunder.makeProject(name, description, imgHashes[1], toWei(amount), futureTime(ONE_DAY), { from: user1 })
 		console.log(`Made project from ${user1}`)
 
 		// User 2 approves dai and contributes funds to user 1's project
@@ -264,7 +265,7 @@ module.exports = async function (callback) {
 		// User 2 makes project
 		description = "I need 20 dai to help fund my new album that I hope to release in two weeks"
 		amount = 20
-		result = await crowdfunder.makeProject(name, description, imgHashes[0], toWei(amount), futureTime(15), { from: user2 })
+		result = await crowdfunder.makeProject(name, description, imgHashes[0], toWei(amount), futureTime(ONE_DAY), { from: user2 })
 		console.log(`Made project from ${user2}`)
 
 		// User 1 approves dai and contributes enough funds to user 2's project to fully fund it

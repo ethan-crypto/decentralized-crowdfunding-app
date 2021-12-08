@@ -60,24 +60,29 @@ You will need node installed, preferably version 17.0.1
 ```sh
 $ git clone https://github.com/ethan-crypto/decentralized-crowdfunding-app.git
 ```
-
-2. Enter project directory and install dependancies
+2. Install yarn using npm
 ```sh
 $ cd decentralized-crowdfunding-app
-$ npm install 
+$ npm install --global yarn
 ```
 
-3. Install truffle globally (preferrably truffle@v5.3.14)
+3. Enter project directory and install dependancies using yarn
+```sh
+$ cd decentralized-crowdfunding-app
+$ yarn install 
+```
+
+4. Install truffle globally (preferrably truffle@v5.3.14)
 ```sh
 $ npm install -g truffle
 ```
 
-4. Install ganache globally 
+5. Install ganache globally 
 ```sh
 $ npm install -g ganache-cli
 ```
 
-5. Run local blockchain as a fork of Ethereum mainnet using ganache-cli and Infura. 
+6. Run local blockchain as a fork of Ethereum mainnet using ganache-cli and Infura. 
 Allows us to work with the state of mainnet and deployed contracts on mainnet
 Go to infura create a new project and copy the mainnet URL 
 e.g Mainnet URL https://mainnet.infura.io/v3/11111111111111111
@@ -89,7 +94,7 @@ Above should run local blockchain with ganache.
 Ensure truffle-config.js networks config is your Ganache port. 
 By default it should be host: 127.0.0.1 and port: 8545 
 
-6. Connect your ganache addresses to Metamask! 
+7. Connect your ganache addresses to Metamask! 
 Copy private Key of the addresses in ganache and import to Metamask
 Connect your metamask to network Localhost 8545
 

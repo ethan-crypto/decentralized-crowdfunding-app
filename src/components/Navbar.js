@@ -6,17 +6,9 @@ import {
   daiSelector,
   daiBalanceSelector
 } from '../store/selectors'
-import { loadDaiBalance } from '../store/interactions'
 
 class AppNavbar extends Component {
   
-  componentWillMount() {
-    this.loadBlockchainData(this.props)
-  }
-  async loadBlockchainData(props) {
-    const { dispatch, dai, account } = props
-    await loadDaiBalance(dai, dispatch, account)
-  }
   render() {
     return (
       < Navbar bg="primary" expand = "lg" className= "navbar-dark">
@@ -26,7 +18,7 @@ class AppNavbar extends Component {
           <Navbar.Collapse className="justify-content-end navbar-dark">
             <Nav className ="me-auto">
               <Nav.Link variant="navbar-dark" href="https://oasis.app/">
-                DAI Balance:<strong> ${this.props.daiBalance} </strong>
+              DAI Balance:<strong> {this.props.account?`$${this.props.daiBalance}`:null} </strong>
               </Nav.Link>
             </Nav> 
             <Nav>

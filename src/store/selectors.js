@@ -4,7 +4,7 @@ import moment from 'moment'
 import { futureTime, formatFunds, formatCost, formatBalance, GREEN, RED, BLUE, ORANGE, GREY } from '../helpers'
 require('moment-countdown')
 
-const account = state => get(state, 'web3.account')
+const account = state => get(state, 'web3.account', false)
 export const accountSelector = createSelector(account, a => a)
 
 const web3 = state => get(state, 'web3.connection')
@@ -34,7 +34,7 @@ export const contractsLoadedSelector = createSelector(
 	(dl, cl, dep) => (dl && cl && dep)
 )
 
-const daiBalance = state => get(state, 'dai.balance', null)
+const daiBalance = state => get(state, 'dai.balance', false)
 export const daiBalanceSelector = createSelector(daiBalance, balance => formatBalance(balance))
 
 const payWithEth = state => get(state, 'crowdfunder.payWithEth', false)

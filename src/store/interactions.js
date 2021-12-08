@@ -75,9 +75,6 @@ export const loadWeb3 = async (dispatch) => {
 		dispatch(web3Loaded(window.web3))
 		return window.web3
 	}
-	else {
-		window.alert('Non-Ethereum browser detected. You should consider trying MetaMask!')
-	}
 }
 
 export const loadAccount = async (web3, dispatch) => {
@@ -202,11 +199,11 @@ export const subscribeToEvents = async (crowdfunder, dai, account, dispatch) => 
 }
 
 export const quoteEthCost = async(dispatch, web3, amount, crowdfunder) => {
-	if (amount) {
+	if (amount > 0 && amount) {
 		amount = web3.utils.toWei(amount, 'ether')
 		dispatch(ethCostLoading())
 		try {
-			const result = await crowdfunder.methods.getEthInputAmount(amount).call()
+			const result = (await crowdfunder.methods.getEthInputAmount(amount).call())
 			dispatch(ethCostLoaded(result))
 			return result
 		} catch(error){

@@ -28,6 +28,8 @@ module.exports = {
           `https://ropsten.infura.io/v3/${process.env.INFURA_API_KEY}`// Url to an Ethereum Node
         )
       },
+      networkCheckTimeoutnetworkCheckTimeout: 10000,
+      timeoutBlocks: 200,
       gas: 5000000,
       gasPrice: 25000000000,
       network_id: 3
