@@ -29,7 +29,6 @@ import {
 import Web3 from 'web3'
 import Crowdfunder from '../abis/Crowdfunder.json'
 import { futureTime } from '../helpers'
-
 const ropstenDai = "0xad6d458402f60fd3bd25163575031acdce07538d"
 
 // spliced ERC20 ABI
@@ -224,10 +223,10 @@ export const contributeToProject = async (dispatch, web3, amount, cost, account,
 		cost = await quoteEthCost(dispatch, web3, amount, crowdfunder)
 		// Increase the quoted cost by 10 percent to ensure the transaction goes through.
 		// The ETH thats leftover will be automatically refunded back to the user.
-		cost = Math.floor(1.3 * (cost))
+		cost = 1.05*(cost)
 		// Send contribute function with ETH cost.
 		amount = web3.utils.toWei(amount, 'ether')
-		const contribution = await crowdfunder.methods.contribute(id, amount, futureTime(15)).send({ from: account, value: cost })
+		const contribution = await crowdfunder.methods.contribute(id, amount, futureTime(15)).send({ from: account, value: cost})
 			.on('transactionHash', (hash) => {
 				dispatch(contributingToProject(dispatch))
 			})
