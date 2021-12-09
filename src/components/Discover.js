@@ -69,13 +69,6 @@ class Discover extends Component {
                           event.preventDefault()
                           contributeToProject(dispatch, web3, contribution.amount, ethCost, account, project.id, crowdfunder, dai)
                         }}
-                        onBlur={event => {
-                          event.preventDefault()
-                          if (!event.currentTarget.contains(event.relatedTarget)) {
-                            quoteEthCost(dispatch, web3, '', crowdfunder)
-                            dispatch(contributionAmountChanged('', project.id)) 
-                          } ; 
-                        }}
                       >
                         <div className="col-sm mx-sm-auto pe-sm-1 mb-sm-auto py-2">
                           <input
