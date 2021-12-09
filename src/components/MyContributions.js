@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { OverlayTrigger, Tooltip, Tabs, Tab } from 'react-bootstrap'
+import { OverlayTrigger, Tabs, Tab } from 'react-bootstrap'
 import Spinner from './Spinner'
 import {
   crowdfunderSelector,
@@ -15,29 +15,6 @@ import {
 import { refundContribution } from '../store/interactions'
 
 
-const showRefundAllButton = props => {
-  return(
-    <>
-      <OverlayTrigger
-        placement='auto'
-        overlay={
-          <Tooltip>
-            <strong>${props.myPendingRefunds.refundTotal}</strong> in total
-          </Tooltip>
-        }
-      >
-        <button
-          className="btn btn-primary btn-block btn-sm"
-          onClick={(event) => {
-            refundContribution(props.dispatch, props.web3, props.account, props.myPendingRefunds.contributions, props.crowdfunder)
-          }}
-        >
-          Refund All
-        </button>
-      </OverlayTrigger>
-    </>
-  )
-}
 
 const renderMyRefundableContributions = (props) => {
   return (
@@ -74,7 +51,6 @@ const renderMyRefundableContributions = (props) => {
                   X
                 </td>
               </tr>
-
           )
         }) }
       </tbody>        
@@ -126,7 +102,6 @@ const showMyContributions = props => {
   return(
     <Tabs defaultActiveKey="pendingRefund" className="bg-dark text-white">
       <Tab eventKey="pendingRefund" title="Pending Refund" className="bg-dark">
-        { props.showRefundAllButton ? showRefundAllButton(props) : null }
         { renderMyRefundableContributions(props)}
       </Tab>
       <Tab eventKey="held" title="Held" className= "">

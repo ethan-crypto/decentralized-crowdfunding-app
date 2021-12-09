@@ -21,29 +21,29 @@ const renderRefunds = (refunds, popover) => {
           <th>Amount</th>
           <th>Time</th>
         </tr>
-      </thead> 
+      </thead>
       <tbody>
-        { refunds.map((refund, key) => {
+        {refunds.map((refund, key) => {
           return (
-            <OverlayTrigger
+            <tr
               key={key}
-              trigger = 'click'
-              rootClose
-              placement='left'
-              overlay={popover(refund.project)}
+              className="refunds-refund"
             >
-              <tr 
+              <OverlayTrigger
                 key={key}
-                className="refunds-refund"
+                trigger='click'
+                rootClose
+                placement='left'
+                overlay={popover(refund.project)}
               >
-                <td className={`text-${refund.project.projectTypeClass}`}>{refund.project.name}</td>
-                <td>${refund.formattedRefundAmount}</td>
-                <td className="text-muted">{refund.formattedTimestamp}</td>
-              </tr>
-            </OverlayTrigger>
+                <td className={`refunds-refund text-${refund.project.projectTypeClass}`}>{refund.project.name}</td>
+              </OverlayTrigger>
+              <td>${refund.formattedRefundAmount}</td>
+              <td className="text-muted">{refund.formattedTimestamp}</td>
+            </tr>
           )
-        }) }
-      </tbody>        
+        })}
+      </tbody>
     </table>
   )
 
@@ -58,29 +58,31 @@ const renderContributions = (contributions, popover) => {
           <th>Amount</th>
           <th>Time</th>
         </tr>
-      </thead> 
+      </thead>
       <tbody>
-        { contributions.map((contribution, key) => {
+        {contributions.map((contribution, key) => {
           return (
-            <OverlayTrigger
+
+            <tr
               key={key}
-              trigger = 'click'
-              rootClose
-              placement='left'
-              overlay={popover(contribution.project)}
+              className="contributions-contribution"
             >
-              <tr 
+              <OverlayTrigger
                 key={key}
-                className="contributions-contribution"
+                trigger='click'
+                rootClose
+                placement='left'
+                overlay={popover(contribution.project)}
               >
-                <td className={`text-${contribution.project.projectTypeClass}`}>{contribution.project.name}</td>
-                <td>${contribution.formattedFundAmount}</td>
-                <td className="text-muted">{contribution.formattedTimestamp}</td>
-              </tr>
-            </OverlayTrigger>
+                <td className={`contributions-project text-${contribution.project.projectTypeClass}`}>{contribution.project.name}</td>
+              </OverlayTrigger>
+
+              <td>${contribution.formattedFundAmount}</td>
+              <td className="text-muted">{contribution.formattedTimestamp}</td>
+            </tr>
           )
-        }) }
-      </tbody>        
+        })}
+      </tbody>
     </table>
   )
 }
@@ -99,23 +101,23 @@ const renderDisburesements = (projects, popover) => {
       <tbody>
         { projects.map((project) => {
           return (
-            <OverlayTrigger
-              key={project.id}
-              trigger = 'click'
-              rootClose
-              placement='left'
-              overlay={popover(project)}
-            >
               <tr 
                 key={project.id}
-                className="disburesements-transfer"
+                className="disburesements-disbursement"
               >
-                <td className={`text-${project.projectTypeClass}`}>{project.name}</td>
+              <OverlayTrigger
+                key={project.id}
+                trigger = 'click'
+                rootClose
+                placement='left'
+                overlay={popover(project)}
+              >
+                <td className={`disbursements-project text-${project.projectTypeClass}`}>{project.name}</td>
+              </OverlayTrigger>
                 <td>${project.disburseAmount}</td>
                 <td>${project.feeAmount}</td>
                 <td className="text-muted">{project.disbursedDate}</td>
               </tr>
-            </OverlayTrigger>
           )
         }) }
       </tbody>        
