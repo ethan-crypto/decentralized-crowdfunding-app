@@ -37,6 +37,9 @@ export const contractsLoadedSelector = createSelector(
 const daiBalance = state => get(state, 'dai.balance', false)
 export const daiBalanceSelector = createSelector(daiBalance, balance => formatBalance(balance))
 
+const ethBalance = state => get(state, 'web3.balance', false)
+export const ethBalanceSelector = createSelector(ethBalance, balance => formatBalance(balance))
+
 const payWithEth = state => get(state, 'crowdfunder.payWithEth', false)
 export const payWithEthSelector = createSelector(payWithEth, bool => bool)
 

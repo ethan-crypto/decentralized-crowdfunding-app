@@ -4,7 +4,8 @@ import { Navbar, Container, Nav } from 'react-bootstrap'
 import { 
   accountSelector,
   daiSelector,
-  daiBalanceSelector
+  daiBalanceSelector,
+  ethBalanceSelector
 } from '../store/selectors'
 
 
@@ -20,6 +21,9 @@ class AppNavbar extends Component {
             <Nav className ="me-auto">
               <Nav.Link variant="navbar-dark" href="https://oasis.app/">
                 DAI Balance:<strong> {this.props.account?`$${this.props.daiBalance}`:null} </strong>
+              </Nav.Link>
+              <Nav.Link variant="navbar-dark" style={{ pointerEvents: 'none' }}>
+                ETH Balance:<strong> {this.props.account?`${this.props.ethBalance}`:null} </strong>
               </Nav.Link>
             </Nav> 
             <Nav>
@@ -38,7 +42,8 @@ function mapStateToProps(state) {
   return {
     account: accountSelector(state),
     dai: daiSelector(state),
-    daiBalance: daiBalanceSelector(state)
+    daiBalance: daiBalanceSelector(state),
+    ethBalance: ethBalanceSelector(state)
   }
 }
 

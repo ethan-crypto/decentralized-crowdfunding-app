@@ -24,6 +24,7 @@ import {
 	contributionRefunded,
 	feePercentLoaded,
 	daiBalanceLoaded,
+	ethBalanceLoaded,
 	defaultPaymentMethodSet
 } from './actions'
 import Web3 from 'web3'
@@ -121,12 +122,15 @@ export const loadCrowdfunder = async (web3, networkId, dispatch) => {
 }
 
 
-export const loadDaiBalance = async (dai, dispatch, account) => {
+export const loadBalances = async (web3, dispatch, dai, account) => {
 	const daiBalance = await dai.methods.balanceOf(account).call()
 	dispatch(daiBalanceLoaded(daiBalance))
+	const ethBalance = await web3.eth.getBalance(account)
+	dispatch(ethBalanceLoaded(ethBalance))
 	// Set default payment method
 	dispatch(defaultPaymentMethodSet(daiBalance.toString() === '0'))
 }
+
 
 export const loadAllCrowdfunderData = async (crowdfunder, deploymentBlock, dispatch) => {
 	// Fetch refunds with the "Refund" event stream
@@ -180,7 +184,7 @@ export const subscribeToEvents = async (crowdfunder, dai, account, dispatch) => 
 
 	crowdfunder.events.Contribution({}, (error, event) => {
 		dispatch(contributedToProject(event.returnValues))
-		loadDaiBalance(dai,dispatch,account)
+		loadBalances(dai,dispatch,account)
 	})
 	crowdfunder.events.ProjectMade({}, (error, event) => {
 		dispatch(projectMade(event.returnValues))
@@ -190,11 +194,11 @@ export const subscribeToEvents = async (crowdfunder, dai, account, dispatch) => 
 	})
 	crowdfunder.events.Disburse({}, (error, event) => {
 		dispatch(projectFundsDisbursed(event.returnValues))
-		loadDaiBalance(dai,dispatch,account)
+		loadBalances(dai,dispatch,account)
 	})
 	crowdfunder.events.Refund({}, (error, event) => {
 		dispatch(contributionRefunded(event.returnValues))
-		loadDaiBalance(dai,dispatch,account)
+		loadBalances(dai,dispatch,account)
 	})
 }
 
@@ -209,6 +213,7 @@ export const quoteEthCost = async(dispatch, web3, amount, crowdfunder) => {
 		} catch(error){
 			window.alert("Could not fetch quoted ETH cost, please try again later")
 			console.log("Could not fetch quoted ETH cost")
+			dispatch(ethCostLoaded(null))
 			return null
 		}
 	} else {

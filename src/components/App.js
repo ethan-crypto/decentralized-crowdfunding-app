@@ -8,7 +8,7 @@ import {
   loadAccount,
   loadDai,
   loadCrowdfunder,
-  loadDaiBalance
+  loadBalances
 } from '../store/interactions'
 import { 
   contractsLoadedSelector,
@@ -54,7 +54,8 @@ class App extends Component {
     if(!crowdfunder) {
       window.alert('Crowdfunder smart contract not detected on the current network. Please select ropsten network with Metamask.')
     }
-    await loadDaiBalance(dai, dispatch, account)
+    await loadBalances(web3, dispatch, dai, account)
+
   }
 
   render() {
