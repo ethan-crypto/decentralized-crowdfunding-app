@@ -26,7 +26,7 @@ import {
 } from '../store/actions'
 
 class Discover extends Component {
-  
+
   render() {
     const {
       dispatch,
@@ -45,7 +45,7 @@ class Discover extends Component {
     } = this.props
     const insufficientEthBalance = ethBalance < ethCost
     const insufficientDaiBalance = daiBalance < contribution.amount
-    const contributionDisabled = ethCostLoading || payWithEth ?  insufficientEthBalance : insufficientDaiBalance
+    const contributionDisabled = ethCostLoading || payWithEth ? insufficientEthBalance : insufficientDaiBalance
     return (
       <Card bg="dark" className="text-white">
         <Card.Header>
@@ -83,7 +83,7 @@ class Discover extends Component {
                             type="number"
                             placeholder="DAI Amount"
                             id={project.id}
-                            value={targettedProject ? contribution.amount:'' }
+                            value={targettedProject ? contribution.amount : ''}
                             onChange={event => {
                               dispatch(contributionAmountChanged(event.target.value, project.id))
                               if (payWithEth) quoteEthCost(dispatch, web3, event.target.value, crowdfunder)
@@ -92,8 +92,8 @@ class Discover extends Component {
                             required />
                         </div>
                         <div className="col-sm-auto mx-sm-auto ps-sm-1 mb-sm-auto py-2">
-                          <OverlayTrigger show = {contributionDisabled && targettedProject && !ethCostLoading} overlay={
-                            <Tooltip id="tooltip-disabled">insufficient {insufficientEthBalance? 'ETH':'DAI'} Balance</Tooltip> 
+                          <OverlayTrigger show={contributionDisabled && targettedProject && !ethCostLoading} overlay={
+                            <Tooltip id="tooltip-disabled">insufficient {insufficientEthBalance ? 'ETH' : 'DAI'} Balance</Tooltip>
                           }>
                             <span className="d-inline-block">
                               <Button type="submit" className="btn btn-primary btn-block btn-sm" disabled={contributionDisabled && targettedProject}>

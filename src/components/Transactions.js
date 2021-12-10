@@ -97,46 +97,46 @@ const renderDisburesements = (projects, popover) => {
           <th>Fee</th>
           <th>Time</th>
         </tr>
-      </thead> 
+      </thead>
       <tbody>
-        { projects.map((project) => {
+        {projects.map((project) => {
           return (
-              <tr 
-                key={project.id}
-                className="disburesements-disbursement"
-              >
+            <tr
+              key={project.id}
+              className="disburesements-disbursement"
+            >
               <OverlayTrigger
                 key={project.id}
-                trigger = 'click'
+                trigger='click'
                 rootClose
                 placement='left'
                 overlay={popover(project)}
               >
                 <td className={`disbursements-project text-${project.projectTypeClass}`}>{project.name}</td>
               </OverlayTrigger>
-                <td>${project.disburseAmount}</td>
-                <td>${project.feeAmount}</td>
-                <td className="text-muted">{project.disbursedDate}</td>
-              </tr>
+              <td>${project.disburseAmount}</td>
+              <td>${project.feeAmount}</td>
+              <td className="text-muted">{project.disbursedDate}</td>
+            </tr>
           )
-        }) }
-      </tbody>        
+        })}
+      </tbody>
     </table>
 
   )
 }
 
 const showTransactions = props => {
-  return(
+  return (
     <Tabs defaultActiveKey="disburesements" className="bg-dark text-white">
       <Tab eventKey="disburesements" title="Disburesements">
-        { renderDisburesements(props.disbursements, props.renderProjectPopover)}
+        {renderDisburesements(props.disbursements, props.renderProjectPopover)}
       </Tab>
       <Tab eventKey="contributions" title="Contributions">
-        { renderContributions(props.contributions, props.renderProjectPopover)}
+        {renderContributions(props.contributions, props.renderProjectPopover)}
       </Tab>
       <Tab eventKey="refunds" title="Refunds">
-        { renderRefunds(props.refunds, props.renderProjectPopover)}
+        {renderRefunds(props.refunds, props.renderProjectPopover)}
       </Tab>
     </Tabs>
   )
@@ -144,14 +144,14 @@ const showTransactions = props => {
 
 class Transactions extends Component {
 
- render() {
+  render() {
     return (
       <div className="card bg-dark text-white">
         <div className="card-header">
           Transactions
         </div>
         <div className="card-body">
-          { this.props.showTransactions ? showTransactions(this.props) : <Spinner />}
+          {this.props.showTransactions ? showTransactions(this.props) : <Spinner />}
         </div>
       </div>
     )

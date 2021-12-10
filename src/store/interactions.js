@@ -184,7 +184,7 @@ export const subscribeToEvents = async (crowdfunder, dai, account, dispatch) => 
 
 	crowdfunder.events.Contribution({}, (error, event) => {
 		dispatch(contributedToProject(event.returnValues))
-		loadBalances(dai,dispatch,account)
+		loadBalances(dai, dispatch, account)
 	})
 	crowdfunder.events.ProjectMade({}, (error, event) => {
 		dispatch(projectMade(event.returnValues))
@@ -194,15 +194,15 @@ export const subscribeToEvents = async (crowdfunder, dai, account, dispatch) => 
 	})
 	crowdfunder.events.Disburse({}, (error, event) => {
 		dispatch(projectFundsDisbursed(event.returnValues))
-		loadBalances(dai,dispatch,account)
+		loadBalances(dai, dispatch, account)
 	})
 	crowdfunder.events.Refund({}, (error, event) => {
 		dispatch(contributionRefunded(event.returnValues))
-		loadBalances(dai,dispatch,account)
+		loadBalances(dai, dispatch, account)
 	})
 }
 
-export const quoteEthCost = async(dispatch, web3, amount, crowdfunder) => {
+export const quoteEthCost = async (dispatch, web3, amount, crowdfunder) => {
 	if (amount > 0 && amount) {
 		amount = web3.utils.toWei(amount, 'ether')
 		dispatch(ethCostLoading())
@@ -210,7 +210,7 @@ export const quoteEthCost = async(dispatch, web3, amount, crowdfunder) => {
 			const result = (await crowdfunder.methods.getEthInputAmount(amount).call())
 			dispatch(ethCostLoaded(result))
 			return result
-		} catch(error){
+		} catch (error) {
 			window.alert("Could not fetch quoted ETH cost, please try again later")
 			console.log("Could not fetch quoted ETH cost")
 			dispatch(ethCostLoaded(null))
@@ -228,10 +228,10 @@ export const contributeToProject = async (dispatch, web3, amount, cost, account,
 		cost = await quoteEthCost(dispatch, web3, amount, crowdfunder)
 		// Increase the quoted cost by 10 percent to ensure the transaction goes through.
 		// The ETH thats leftover will be automatically refunded back to the user.
-		cost = 1.05*(cost)
+		cost = 1.05 * (cost)
 		// Send contribute function with ETH cost.
 		amount = web3.utils.toWei(amount, 'ether')
-		const contribution = await crowdfunder.methods.contribute(id, amount, futureTime(15)).send({ from: account, value: cost})
+		const contribution = await crowdfunder.methods.contribute(id, amount, futureTime(15)).send({ from: account, value: cost })
 			.on('transactionHash', (hash) => {
 				dispatch(contributingToProject(dispatch))
 			})
