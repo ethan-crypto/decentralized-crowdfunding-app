@@ -101,11 +101,9 @@ class MyProjects extends Component {
   }
   constructor(props) {
     super(props)
-    this.state = {
-      navSelection: 'myProjects'
-    }
+    this.state = {navSelection: 'myProjects'}
   }
-
+  
   async loadBlockchainData() {
     const { dispatch, web3, crowdfunder, account } = this.props
     await loadFeePercent(dispatch, web3, crowdfunder, account)

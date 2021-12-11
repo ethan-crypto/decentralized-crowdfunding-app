@@ -40,12 +40,9 @@ class Discover extends Component {
       payWithEth,
       ethCostLoading,
       ethCost,
-      daiBalance,
-      ethBalance
+      insufficientEthBalance,
+      contributionDisabled
     } = this.props
-    const insufficientEthBalance = ethBalance < ethCost
-    const insufficientDaiBalance = daiBalance < contribution.amount
-    const contributionDisabled = ethCostLoading || payWithEth ? insufficientEthBalance : insufficientDaiBalance
     return (
       <Card bg="dark" className="text-white">
         <Card.Header>
@@ -93,7 +90,7 @@ class Discover extends Component {
                         </div>
                         <div className="col-sm-auto mx-sm-auto ps-sm-1 mb-sm-auto py-2">
                           <OverlayTrigger show={contributionDisabled && targettedProject && !ethCostLoading} overlay={
-                            <Tooltip id="tooltip-disabled">insufficient {insufficientEthBalance ? 'ETH' : 'DAI'} Balance</Tooltip>
+                            <Tooltip id="tooltip-disabled">Insufficient {insufficientEthBalance ? 'ETH' : 'DAI'} balance</Tooltip>
                           }>
                             <span className="d-inline-block">
                               <Button type="submit" className="btn btn-primary btn-block btn-sm" disabled={contributionDisabled && targettedProject}>
@@ -121,6 +118,13 @@ class Discover extends Component {
 function mapStateToProps(state) {
   const contribution = contributionSelector(state)
   const formattedProjectsLoaded = formattedProjectsLoadedSelector(state)
+  const ethCost = ethCostSelector(state)
+  const ethBalance = ethBalanceSelector(state)
+  const daiBalance = daiBalanceSelector(state)
+  const insufficientEthBalance = ethBalance < ethCost
+  const insufficientDaiBalance = daiBalance < contribution.amount
+  const payWithEth = payWithEthSelector(state)
+  const ethCostLoading = ethCostLoadingSelector(state)
   return {
     web3: web3Selector(state),
     crowdfunder: crowdfunderSelector(state),
@@ -128,12 +132,14 @@ function mapStateToProps(state) {
     account: accountSelector(state),
     discoverProjects: discoverProjectsSelector(state),
     contribution,
-    payWithEth: payWithEthSelector(state),
+    payWithEth,
     showOpenProjects: formattedProjectsLoaded && !contribution.loading,
-    ethCostLoading: ethCostLoadingSelector(state),
-    ethCost: ethCostSelector(state),
-    ethBalance: ethBalanceSelector(state),
-    daiBalance: daiBalanceSelector(state)
+    ethCostLoading,
+    ethCost,
+    ethBalance,
+    daiBalance,
+    insufficientEthBalance,
+    contributionDisabled: payWithEth ? insufficientEthBalance : insufficientDaiBalance || ethCostLoading 
   }
 }
 
