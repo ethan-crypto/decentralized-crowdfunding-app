@@ -90,7 +90,7 @@ class Discover extends Component {
                         </div>
                         <div className="col-sm-auto mx-sm-auto ps-sm-1 mb-sm-auto py-2">
                           <OverlayTrigger show={contributionDisabled && targettedProject && !ethCostLoading} overlay={
-                            <Tooltip id="tooltip-disabled">Insufficient {insufficientEthBalance ? 'ETH' : 'DAI'} balance</Tooltip>
+                            <Tooltip id="tooltip-disabled">Insufficient {insufficientEthBalance && payWithEth ? 'ETH' : 'DAI'} balance</Tooltip>
                           }>
                             <span className="d-inline-block">
                               <Button type="submit" className="btn btn-primary btn-block btn-sm" disabled={contributionDisabled && targettedProject}>
