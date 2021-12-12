@@ -55,7 +55,6 @@ class App extends Component {
       window.alert('Crowdfunder smart contract not detected on the current network. Please select ropsten network with Metamask.')
     }
     await loadBalances(web3, dispatch, dai, account)
-
   }
 
   render() {
