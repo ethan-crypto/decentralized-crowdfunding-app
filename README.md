@@ -14,6 +14,10 @@ If a project meets its funding goal, creators can claim their collected funds fo
 
 If, however, a project fails to meet its funding goal, supporters can claim a refund for the total amount they contributed to the project. 
 
+## Image of the App
+
+![9520935D-E9EF-4CBC-8762-CA13ECDD69C6](https://user-images.githubusercontent.com/80181942/145728088-c570d578-0b4d-4f92-9a07-7e04e220e1b4.jpeg)
+
 ### Overview of the user interface:
 
 The navbar contains the name of the application, the user's dai balance and the address of the account connected to the app.
@@ -175,7 +179,8 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/m
 
 ### Advanced Configuration
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)![Image 12-12-21 at 2 16 PM](https://user-images.githubusercontent.com/80181942/145728105-4de326d1-8b22-4b7b-b699-f96b8b8f4bc2.jpeg)
+
 
 ### Deployment
 
