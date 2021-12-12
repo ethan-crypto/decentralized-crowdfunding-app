@@ -1,16 +1,18 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { Form, Card, Button } from 'react-bootstrap'
+import { Form, Card, OverlayTrigger, Tooltip, Button } from 'react-bootstrap'
 import Spinner from './Spinner'
 import {
   crowdfunderSelector,
   daiSelector,
+  daiBalanceSelector,
   discoverProjectsSelector,
   accountSelector,
   contributionSelector,
   web3Selector,
   formattedProjectsLoadedSelector,
   payWithEthSelector,
+  ethBalanceSelector,
   ethCostLoadingSelector,
   ethCostSelector
 } from '../store/selectors'
@@ -37,7 +39,9 @@ class Discover extends Component {
       discoverProjects,
       payWithEth,
       ethCostLoading,
-      ethCost
+      ethCost,
+      insufficientEthBalance,
+      contributionDisabled
     } = this.props
     return (
       <Card bg="dark" className="text-white">
@@ -48,7 +52,7 @@ class Discover extends Component {
             label="Pay with ETH"
             onChange={(e) => {
               dispatch(paymentMethodToggled(e.target.checked))
-              if(e.target.checked) quoteEthCost(dispatch, web3, contribution.amount, crowdfunder)
+              if (e.target.checked) quoteEthCost(dispatch, web3, contribution.amount, crowdfunder)
             }}
             checked={payWithEth}
           />
@@ -56,6 +60,7 @@ class Discover extends Component {
         <div className="card-body">
           {this.props.showOpenProjects ?
             discoverProjects.map((project) => {
+              const targettedProject = contribution.id === project.id
               return (
                 <div className="card mb-4" key={project.id} >
                   <div className="card-header">
@@ -75,7 +80,7 @@ class Discover extends Component {
                             type="number"
                             placeholder="DAI Amount"
                             id={project.id}
-                            value={contribution.id !== project.id ? '' : contribution.amount}
+                            value={targettedProject ? contribution.amount : ''}
                             onChange={event => {
                               dispatch(contributionAmountChanged(event.target.value, project.id))
                               if (payWithEth) quoteEthCost(dispatch, web3, event.target.value, crowdfunder)
@@ -84,10 +89,18 @@ class Discover extends Component {
                             required />
                         </div>
                         <div className="col-sm-auto mx-sm-auto ps-sm-1 mb-sm-auto py-2">
-                          <Button type="submit" className="btn btn-primary btn-block btn-sm" disabled={ethCostLoading}>Contribute</Button>
+                          <OverlayTrigger show={contributionDisabled && targettedProject && !ethCostLoading} overlay={
+                            <Tooltip id="tooltip-disabled">Insufficient {insufficientEthBalance && payWithEth ? 'ETH' : 'DAI'} balance</Tooltip>
+                          }>
+                            <span className="d-inline-block">
+                              <Button type="submit" className="btn btn-primary btn-block btn-sm" disabled={contributionDisabled && targettedProject}>
+                                Contribute
+                              </Button>
+                            </span>
+                          </OverlayTrigger>
                         </div>
                       </form>
-                      {payWithEth && ((ethCostLoading || ethCost > 0) && contribution.id === project.id)
+                      {payWithEth && ((ethCostLoading || ethCost > 0) && targettedProject)
                         ? <small>Cost: {ethCostLoading ? <Spinner type="small" />
                           : `${ethCost} ETH`}</small> : null}
                     </li>
@@ -105,6 +118,13 @@ class Discover extends Component {
 function mapStateToProps(state) {
   const contribution = contributionSelector(state)
   const formattedProjectsLoaded = formattedProjectsLoadedSelector(state)
+  const ethCost = ethCostSelector(state)
+  const ethBalance = ethBalanceSelector(state)
+  const daiBalance = daiBalanceSelector(state)
+  const insufficientEthBalance = ethBalance < ethCost
+  const insufficientDaiBalance = daiBalance < contribution.amount
+  const payWithEth = payWithEthSelector(state)
+  const ethCostLoading = ethCostLoadingSelector(state)
   return {
     web3: web3Selector(state),
     crowdfunder: crowdfunderSelector(state),
@@ -112,10 +132,14 @@ function mapStateToProps(state) {
     account: accountSelector(state),
     discoverProjects: discoverProjectsSelector(state),
     contribution,
-    payWithEth: payWithEthSelector(state),
+    payWithEth,
     showOpenProjects: formattedProjectsLoaded && !contribution.loading,
-    ethCostLoading: ethCostLoadingSelector(state),
-    ethCost: ethCostSelector(state)
+    ethCostLoading,
+    ethCost,
+    ethBalance,
+    daiBalance,
+    insufficientEthBalance,
+    contributionDisabled: payWithEth ? insufficientEthBalance : insufficientDaiBalance || ethCostLoading 
   }
 }
 

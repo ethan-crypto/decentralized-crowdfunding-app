@@ -24,6 +24,7 @@ import {
 	contributionRefunded,
 	feePercentLoaded,
 	daiBalanceLoaded,
+	ethBalanceLoaded,
 	defaultPaymentMethodSet
 } from './actions'
 import Web3 from 'web3'
@@ -121,9 +122,11 @@ export const loadCrowdfunder = async (web3, networkId, dispatch) => {
 }
 
 
-export const loadDaiBalance = async (dai, dispatch, account) => {
+export const loadBalances = async (web3, dispatch, dai, account) => {
 	const daiBalance = await dai.methods.balanceOf(account).call()
 	dispatch(daiBalanceLoaded(daiBalance))
+	const ethBalance = await web3.eth.getBalance(account)
+	dispatch(ethBalanceLoaded(ethBalance))
 	// Set default payment method
 	dispatch(defaultPaymentMethodSet(daiBalance.toString() === '0'))
 }
@@ -180,7 +183,7 @@ export const subscribeToEvents = async (crowdfunder, dai, account, dispatch) => 
 
 	crowdfunder.events.Contribution({}, (error, event) => {
 		dispatch(contributedToProject(event.returnValues))
-		loadDaiBalance(dai,dispatch,account)
+		loadBalances(dai, dispatch, account)
 	})
 	crowdfunder.events.ProjectMade({}, (error, event) => {
 		dispatch(projectMade(event.returnValues))
@@ -190,15 +193,15 @@ export const subscribeToEvents = async (crowdfunder, dai, account, dispatch) => 
 	})
 	crowdfunder.events.Disburse({}, (error, event) => {
 		dispatch(projectFundsDisbursed(event.returnValues))
-		loadDaiBalance(dai,dispatch,account)
+		loadBalances(dai, dispatch, account)
 	})
 	crowdfunder.events.Refund({}, (error, event) => {
 		dispatch(contributionRefunded(event.returnValues))
-		loadDaiBalance(dai,dispatch,account)
+		loadBalances(dai, dispatch, account)
 	})
 }
 
-export const quoteEthCost = async(dispatch, web3, amount, crowdfunder) => {
+export const quoteEthCost = async (dispatch, web3, amount, crowdfunder) => {
 	if (amount > 0 && amount) {
 		amount = web3.utils.toWei(amount, 'ether')
 		dispatch(ethCostLoading())
@@ -206,9 +209,10 @@ export const quoteEthCost = async(dispatch, web3, amount, crowdfunder) => {
 			const result = (await crowdfunder.methods.getEthInputAmount(amount).call())
 			dispatch(ethCostLoaded(result))
 			return result
-		} catch(error){
+		} catch (error) {
 			window.alert("Could not fetch quoted ETH cost, please try again later")
 			console.log("Could not fetch quoted ETH cost")
+			dispatch(ethCostLoaded(null))
 			return null
 		}
 	} else {
@@ -223,10 +227,10 @@ export const contributeToProject = async (dispatch, web3, amount, cost, account,
 		cost = await quoteEthCost(dispatch, web3, amount, crowdfunder)
 		// Increase the quoted cost by 10 percent to ensure the transaction goes through.
 		// The ETH thats leftover will be automatically refunded back to the user.
-		cost = Math.floor(1.1 * (cost))
+		cost = 1.05 * (cost)
 		// Send contribute function with ETH cost.
 		amount = web3.utils.toWei(amount, 'ether')
-		crowdfunder.methods.contribute(id, amount, futureTime(15)).send({ from: account, value: cost })
+		const contribution = await crowdfunder.methods.contribute(id, amount, futureTime(15)).send({ from: account, value: cost })
 			.on('transactionHash', (hash) => {
 				dispatch(contributingToProject(dispatch))
 			})
@@ -234,6 +238,7 @@ export const contributeToProject = async (dispatch, web3, amount, cost, account,
 				console.error(error)
 				window.alert(`There was an error!`)
 			})
+		console.log(contribution)
 	} else {
 		amount = web3.utils.toWei(amount, 'ether')
 		// Fetch project address

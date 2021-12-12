@@ -13,6 +13,13 @@ export function web3AccountLoaded(account) {
 	}
 }
 
+export function ethBalanceLoaded(balance) {
+	return {
+		type: 'ETH_BALANCE_LOADED',
+		balance
+	}
+}
+
 //DAI
 export function daiLoaded(contract) {
 	return {

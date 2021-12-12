@@ -5,20 +5,20 @@ import Discover from './Discover'
 import MyProjects from './MyProjects'
 import MyContributions from './MyContributions'
 import Transactions from './Transactions'
-import { 
+import {
   crowdfunderSelector,
   daiSelector,
   accountSelector,
   web3Selector,
   deploymentBlockSelector
- } from '../store/selectors'
-import { 
-  loadAllCrowdfunderData, 
+} from '../store/selectors'
+import {
+  loadAllCrowdfunderData,
   subscribeToEvents,
 } from '../store/interactions'
 
 const renderProjectPopover = project => {
-  return(
+  return (
     <Popover id="popover-positioned-auto">
       <Popover.Header >
         <small className="text-muted">{project.creator}</small>
@@ -31,8 +31,8 @@ const renderProjectPopover = project => {
 }
 
 const renderRefundProgressBar = refunds => {
-  
-  return(
+
+  return (
     <OverlayTrigger
       placement="bottom"
       overlay={
@@ -41,7 +41,7 @@ const renderRefundProgressBar = refunds => {
         </Tooltip>
       }
     >
-      <ProgressBar now = {refunds.percentRefunded} variant ="dark"  />
+      <ProgressBar now={refunds.percentRefunded} variant="dark" />
     </OverlayTrigger>
   )
 }
@@ -49,10 +49,10 @@ const renderRefundProgressBar = refunds => {
 const renderRefundInfo = refunds => {
   return (
     <tr>
-      <td className= "small float-right">REFUNDS: </td>
-      <td className= "small float-left mt-1 text-muted">
-        {refunds.formattedTotalRefundAmount > 0 ? `$${refunds.formattedTotalRefundAmount} refunded across ${refunds.numberOfRefunds} supporter${ refunds.numberOfRefunds !== 1 ? 's' : ''}` :
-        'None' } 
+      <td className="small float-right">REFUNDS: </td>
+      <td className="small float-left mt-1 text-muted">
+        {refunds.formattedTotalRefundAmount > 0 ? `$${refunds.formattedTotalRefundAmount} refunded across ${refunds.numberOfRefunds} supporter${refunds.numberOfRefunds !== 1 ? 's' : ''}` :
+          'None'}
       </td>
     </tr>
   )
@@ -60,15 +60,15 @@ const renderRefundInfo = refunds => {
 
 const renderContent = (project) => {
   const projectRefundable = project.formattedRaisedFunds > 0 && project.refunds !== undefined
-  return(
+  return (
     <>
       <li className="list-group-item">
-        <p className="text-center"><img src={`https://ipfs.infura.io/ipfs/${project.imgHash}`} alt={project.imgHash} className= 'mw-100' /></p>
+        <p className="text-center"><img src={`https://ipfs.infura.io/ipfs/${project.imgHash}`} alt={project.imgHash} className='mw-100' /></p>
         <p>{project.name}</p>
         <small className="float-left mt-1 text-muted"> {project.description} </small>
       </li>
       <li key={project.id} className="list-group-item py-2">
-        <div className= "py-2">
+        <div className="py-2">
           <OverlayTrigger
             placement="top"
             overlay={
@@ -77,28 +77,28 @@ const renderContent = (project) => {
               </Tooltip>
             }
           >
-            <ProgressBar now = {project.percentFunded} variant ={project.projectTypeClass}  />
+            <ProgressBar now={project.percentFunded} variant={project.projectTypeClass} />
           </OverlayTrigger>
-          { projectRefundable ? renderRefundProgressBar(project.refunds) : null}
+          {projectRefundable ? renderRefundProgressBar(project.refunds) : null}
         </div>
         <table className="table table-dark table-sm small mb-sm-2">
           <tbody>
             <tr>
-              <td className= "small float-right">GOAL: </td>
-              <td className= "small float-left mt-1 text-muted">Raise ${project.formattedFundGoal} in {project.durationInDays} {project.durationInDays !== 1 ?"days":"day"}</td>
+              <td className="small float-right">GOAL: </td>
+              <td className="small float-left mt-1 text-muted">Raise ${project.formattedFundGoal} in {project.durationInDays} {project.durationInDays !== 1 ? "days" : "day"}</td>
             </tr>
             <tr>
-              <td className= "small float-right">PROGRESS: </td>
-              <td className= "small float-left mt-1 text-muted">{project.formattedRaisedFunds > 0 ? 
-                `$${project.formattedRaisedFunds} contributed across ${ project.supporterCount } supporter${ +project.supporterCount !== 1 ? 's' : ''}` : 
-                'None' }
+              <td className="small float-right">PROGRESS: </td>
+              <td className="small float-left mt-1 text-muted">{project.formattedRaisedFunds > 0 ?
+                `$${project.formattedRaisedFunds} contributed across ${project.supporterCount} supporter${+project.supporterCount !== 1 ? 's' : ''}` :
+                'None'}
               </td>
             </tr>
             <tr>
-              <td className= "small float-right">{project.status === "OPEN" ? "TIME LEFT: " : project.status === "CANCELLED" ? "CANCELLED: " : "ENDED: "}</td>
-              <td className= "small float-left mt-1 text-muted">{project.status === "OPEN" ? project.timeLeft : project.status === "CANCELLED" ? project.cancelledDate : project.endDate }</td>
+              <td className="small float-right">{project.status === "OPEN" ? "TIME LEFT: " : project.status === "CANCELLED" ? "CANCELLED: " : "ENDED: "}</td>
+              <td className="small float-left mt-1 text-muted">{project.status === "OPEN" ? project.timeLeft : project.status === "CANCELLED" ? project.cancelledDate : project.endDate}</td>
             </tr>
-            { projectRefundable ? renderRefundInfo(project.refunds) : null}
+            {projectRefundable ? renderRefundInfo(project.refunds) : null}
           </tbody>
         </table>
       </li>
@@ -122,19 +122,19 @@ class Content extends Component {
     return (
       <div className="content">
         <Discover
-          renderContent ={renderContent}
+          renderContent={renderContent}
         />
         <div className="vertical-split">
           <MyContributions
-            renderProjectPopover ={renderProjectPopover}
+            renderProjectPopover={renderProjectPopover}
           />
           <Transactions
-            renderProjectPopover ={renderProjectPopover}
+            renderProjectPopover={renderProjectPopover}
           />
         </div>
-          <MyProjects 
-            renderContent ={renderContent}
-          />
+        <MyProjects
+          renderContent={renderContent}
+        />
       </div>
     );
   }

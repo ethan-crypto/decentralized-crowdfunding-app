@@ -113,11 +113,11 @@ td.contributions-claimRefund {
   cursor: pointer;
 }
 
-tr.refunds-refund {
+td.refunds-refund {
   cursor: pointer;
 }
 
-tr.transfers-transfer {
+td.disbursements-project {
   cursor: pointer;
 }
 form > div {

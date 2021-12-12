@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { Nav, NavDropdown } from 'react-bootstrap'
 import Spinner from './Spinner'
-import { 
+import {
   crowdfunderSelector,
   daiSelector,
   accountSelector,
@@ -18,7 +18,7 @@ import {
   projectMakingSelector,
   bufferSelector
 } from '../store/selectors'
-import { 
+import {
   cancelProject,
   disburseProjectFunds,
   loadFeePercent,
@@ -29,21 +29,21 @@ import NewProject from './NewProject'
 
 const renderButton = (project, props) => {
   const isOpen = project.status === "OPEN"
-  return(
-    <li key={project.id} className="list-group-item py-2"> 
+  return (
+    <li key={project.id} className="list-group-item py-2">
       <button
         className="btn btn-link btn-sm float-right pt-0"
         name={project.id}
         onClick={(event) => {
           isOpen
-          ? cancelProject(props.dispatch, props.web3, props.account, event.target.name, props.crowdfunder)
-          : disburseProjectFunds(props.dispatch, props.web3, props.account, event.target.name, props.crowdfunder) 
+            ? cancelProject(props.dispatch, props.web3, props.account, event.target.name, props.crowdfunder)
+            : disburseProjectFunds(props.dispatch, props.web3, props.account, event.target.name, props.crowdfunder)
         }}
       >
-        {isOpen ? "Cancel Project" : "Disburse Project Funds" }
-      </button> 
+        {isOpen ? "Cancel Project" : "Disburse Project Funds"}
+      </button>
     </li>
-  )  
+  )
 }
 
 
@@ -71,7 +71,7 @@ function renderMyProjectsContent(props, selectedKey) {
     crowdfunder
   } = props
 
-  switch(selectedKey) {
+  switch (selectedKey) {
     case 'myProjects':
       return renderMyProjects(props, props.myProjects)
     case 'myPendingDisbursements':
@@ -82,12 +82,12 @@ function renderMyProjectsContent(props, selectedKey) {
       return renderMyProjects(props, props.myClosedProjects)
     case 'New':
       return (
-        <NewProject 
+        <NewProject
           dispatch={dispatch}
-          onSubmit= { 
-          (project) => { makeProject(dispatch, web3, project, buffer, account, crowdfunder) }
-          } 
-         />)
+          onSubmit={
+            (project) => { makeProject(dispatch, web3, project, buffer, account, crowdfunder) }
+          }
+        />)
     default:
       return renderMyProjects(props, props.myProjects)
   }
@@ -101,11 +101,9 @@ class MyProjects extends Component {
   }
   constructor(props) {
     super(props)
-    this.state = {
-      navSelection: 'myProjects'
-    }
+    this.state = {navSelection: 'myProjects'}
   }
-
+  
   async loadBlockchainData() {
     const { dispatch, web3, crowdfunder, account } = this.props
     await loadFeePercent(dispatch, web3, crowdfunder, account)
@@ -124,7 +122,7 @@ class MyProjects extends Component {
                 <Nav
                   variant="tabs"
                   defaultActiveKey="myProjects"
-                  onSelect={(selectedKey) => this.setState(prevState => ({navSelection: selectedKey}))}
+                  onSelect={(selectedKey) => this.setState(prevState => ({ navSelection: selectedKey }))}
                 >
                   <NavDropdown title="View" id="nav-dropdown">
                     <NavDropdown.Item eventKey="myProjects">All</NavDropdown.Item>
@@ -139,7 +137,7 @@ class MyProjects extends Component {
                 </Nav>
               </div>
               <div>
-              {renderMyProjectsContent(this.props, this.state.navSelection)}
+                {renderMyProjectsContent(this.props, this.state.navSelection)}
               </div>
             </>
             : <Spinner />}

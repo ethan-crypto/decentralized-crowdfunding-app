@@ -1,23 +1,25 @@
- import { combineReducers } from 'redux';
- import { reducer as formReducer } from 'redux-form'
+import { combineReducers } from 'redux';
+import { reducer as formReducer } from 'redux-form'
 
 function web3(state = {}, action) {
-	switch(action.type) {
+	switch (action.type) {
 		case 'WEB3_LOADED':
-			return { ...state, connection: action.connection}
+			return { ...state, connection: action.connection }
 		case 'WEB3_ACCOUNT_LOADED':
-			return { ...state, account: action.account}
+			return { ...state, account: action.account }
+		case 'ETH_BALANCE_LOADED':
+			return { ...state, balance: action.balance }
 		default:
 			return state
 	}
 }
 
 function dai(state = {}, action) {
-	switch(action.type) {
+	switch (action.type) {
 		case 'DAI_LOADED':
-			return { ...state, loaded: true, contract: action.contract}
+			return { ...state, loaded: true, contract: action.contract }
 		case 'DAI_BALANCE_LOADED':
-			return {...state, balance: action.balance }
+			return { ...state, balance: action.balance }
 		default:
 			return state
 	}
@@ -25,19 +27,19 @@ function dai(state = {}, action) {
 
 function crowdfunder(state = {}, action) {
 	let index, data
-	switch(action.type) {
+	switch (action.type) {
 		case 'CROWDFUNDER_LOADED':
-			return { ...state, loaded: true, contract: action.contract}
+			return { ...state, loaded: true, contract: action.contract }
 		case 'DEPLOYMENT_DATA_LOADED':
-			return { ...state, deployment: { loaded: true, data: action.deployment} }
+			return { ...state, deployment: { loaded: true, data: action.deployment } }
 		case 'DEFUALT_PAYMENT_METHOD_SET':
-			return {...state, payWithEth: action.bool } 
+			return { ...state, payWithEth: action.bool }
 		case 'PAYMENT_METHOD_TOGGLED':
-			return {...state, payWithEth: !state.payWithEth } 
+			return { ...state, payWithEth: !state.payWithEth }
 		case 'ETH_COST_LOADING':
-			return {...state, ethCostLoading: true } 
+			return { ...state, ethCostLoading: true }
 		case 'ETH_COST_LOADED':
-			return {...state, ethCostLoading: false, ethCost: action.cost } 
+			return { ...state, ethCostLoading: false, ethCost: action.cost }
 		case 'CANCELLED_PROJECTS_LOADED':
 			return { ...state, cancelledProjects: { loaded: true, data: action.cancelledProjects } }
 		case 'SUCCESSFUL_PROJECTS_LOADED':
@@ -45,7 +47,7 @@ function crowdfunder(state = {}, action) {
 		case 'ALL_PROJECTS_LOADED':
 			return { ...state, allProjects: { loaded: true, data: action.allProjects } }
 		case 'ALL_CONTRIBUTIONS_LOADED':
-			return {...state, allContributions: { loaded: true, data: action.contributions }}
+			return { ...state, allContributions: { loaded: true, data: action.contributions } }
 		case 'CONTRIBUTING_TO_PROJECT':
 			return { ...state, ethCost: null, contribution: { ...state.contribution, amount: null, id: null, loading: true } }
 		case 'CONTRIBUTION_AMOUNT_CHANGED':
@@ -53,18 +55,18 @@ function crowdfunder(state = {}, action) {
 		case 'CONTRIBUTED_TO_PROJECT':
 			let projectData, contributionData
 			//Prevent duplicate contributions
-			index = state.allProjects.data.findIndex( 
+			index = state.allProjects.data.findIndex(
 				project => project.id === action.contribution.id &&
-				+project.raisedFunds + +action.contribution.fundAmount === +action.contribution.raisedFunds
+					+project.raisedFunds + +action.contribution.fundAmount === +action.contribution.raisedFunds
 			)
-			if(index !== -1) {
+			if (index !== -1) {
 				projectData = state.allProjects.data
 				// Increment supporter count by 1 if contribution is from a new supporter
-				if(action.contribution.newSupporter) {
+				if (action.contribution.newSupporter) {
 					projectData[index].supporterCount++
 				}
 				projectData[index] = {
-					...state.allProjects.data[index], 
+					...state.allProjects.data[index],
 					raisedFunds: action.contribution.raisedFunds
 				}
 				contributionData = [...state.allContributions.data, action.contribution]
@@ -74,8 +76,8 @@ function crowdfunder(state = {}, action) {
 				contributionData = state.allContributions.data
 			}
 
-			return { 
-				...state, 
+			return {
+				...state,
 				allProjects: {
 					...state.allProjects,
 					data: projectData
@@ -84,44 +86,44 @@ function crowdfunder(state = {}, action) {
 					...state.allContributions,
 					data: contributionData
 				},
-				contribution: { ...state.contribution, loading: false }	
+				contribution: { ...state.contribution, loading: false }
 			}
 		case 'IMAGE_FILE_CAPTURED':
 			return { ...state, buffer: action.buffer }
 		case 'PROJECT_MAKING':
-			return {...state, projectMaking: true, buffer: null }
+			return { ...state, projectMaking: true, buffer: null }
 		case 'PROJECT_MADE':
 			//Prevent duplicate projects
 			index = state.allProjects.data.findIndex(project => project.id === action.project.id);
 
-			if(index === -1) {
+			if (index === -1) {
 				data = [...state.allProjects.data, action.project]
 			} else {
 				data = state.allProjects.data
-			}	
+			}
 
 			return {
 				...state,
 				allProjects: {
-				  ...state.allProjects,
-				  data
+					...state.allProjects,
+					data
 				},
 				projectMaking: false
 			}
 		case 'PROJECT_CANCELLING':
-      		return {...state, projectCancelling: true }
-      	case 'PROJECT_CANCELLED':
-      		return {
-		        ...state,
-		        projectCancelling: false,
-		        cancelledProjects: {
-		          ...state.cancelledProjects, 
-		          data: [
-		            ...state.cancelledProjects.data,
-		            action.project
-		          ]
-		        }
-		    }
+			return { ...state, projectCancelling: true }
+		case 'PROJECT_CANCELLED':
+			return {
+				...state,
+				projectCancelling: false,
+				cancelledProjects: {
+					...state.cancelledProjects,
+					data: [
+						...state.cancelledProjects.data,
+						action.project
+					]
+				}
+			}
 		case 'ALL_REFUNDS_LOADED':
 			return { ...state, allRefunds: { loaded: true, data: action.refunds } }
 		case 'PROJECT_FUNDS_DISBURSING':
@@ -130,7 +132,7 @@ function crowdfunder(state = {}, action) {
 			//Prevent duplicate succesful projects
 			index = state.successfulProjects.data.findIndex(project => project.id === action.project.id);
 
-			if(index === -1) {
+			if (index === -1) {
 				data = [...state.successfulProjects.data, action.project]
 			} else {
 				data = state.successfulProjects.data
@@ -139,18 +141,18 @@ function crowdfunder(state = {}, action) {
 			return {
 				...state,
 				successfulProjects: {
-				  ...state.successfulProjects,
-				  data
+					...state.successfulProjects,
+					data
 				},
 				projectFundsTransfering: false
 			}
 		case 'CONTRIBUTION_REFUNDING':
-			return {...state, contributionRefunding: true}
+			return { ...state, contributionRefunding: true }
 		case 'CONTRIBUTION_REFUNDED':
 			//Prevent duplicate refunds
 			index = state.allRefunds.data.findIndex(refund => refund.id === action.refund.id && refund.supporter === action.refund.supporter);
 
-			if(index === -1) {
+			if (index === -1) {
 				data = [...state.allRefunds.data, action.refund]
 			} else {
 				data = state.allRefunds.data
@@ -159,13 +161,13 @@ function crowdfunder(state = {}, action) {
 			return {
 				...state,
 				allRefunds: {
-				  ...state.allRefunds,
-				  data
+					...state.allRefunds,
+					data
 				},
 				contributionRefunding: false
 			}
 		case 'FEE_PERCENT_LOADED':
-			return {...state, feePercent: action.percent}
+			return { ...state, feePercent: action.percent }
 		default:
 			return state
 	}

@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { OverlayTrigger, Tooltip, Tabs, Tab } from 'react-bootstrap'
+import { OverlayTrigger, Tabs, Tab } from 'react-bootstrap'
 import Spinner from './Spinner'
 import {
   crowdfunderSelector,
@@ -15,29 +15,6 @@ import {
 import { refundContribution } from '../store/interactions'
 
 
-const showRefundAllButton = props => {
-  return(
-    <>
-      <OverlayTrigger
-        placement='auto'
-        overlay={
-          <Tooltip>
-            <strong>${props.myPendingRefunds.refundTotal}</strong> in total
-          </Tooltip>
-        }
-      >
-        <button
-          className="btn btn-primary btn-block btn-sm"
-          onClick={(event) => {
-            refundContribution(props.dispatch, props.web3, props.account, props.myPendingRefunds.contributions, props.crowdfunder)
-          }}
-        >
-          Refund All
-        </button>
-      </OverlayTrigger>
-    </>
-  )
-}
 
 const renderMyRefundableContributions = (props) => {
   return (
@@ -49,35 +26,34 @@ const renderMyRefundableContributions = (props) => {
           <th>Time</th>
           <th>Claim</th>
         </tr>
-      </thead> 
+      </thead>
       <tbody>
-        { props.myRefundableContributions.map((contribution, key) => {
-          return (  
-              <tr 
-                key= {key}
-                className="contributions-contribution"
-              >
+        {props.myRefundableContributions.map((contribution, key) => {
+          return (
+            <tr
+              key={key}
+              className="contributions-contribution"
+            >
               <OverlayTrigger
-                key= {key}
-                trigger = 'click'
+                key={key}
+                trigger='click'
                 rootClose
                 placement='left'
                 overlay={props.renderProjectPopover(contribution.project)}
               >
                 <td className={`contributions-project text-${contribution.project.projectTypeClass}`}>{contribution.project.name}</td>
               </OverlayTrigger>
-                <td>${contribution.formattedFundAmount}</td>
-                <td className="text-muted">{contribution.formattedTimestamp}</td>
-                <td className="contributions-claimRefund" 
-                  onClick = {(e)=> refundContribution(props.dispatch, props.web3, props.account, contribution.id, props.crowdfunder)}
-                >
-                  X
-                </td>
-              </tr>
-
+              <td>${contribution.formattedFundAmount}</td>
+              <td className="text-muted">{contribution.formattedTimestamp}</td>
+              <td className="contributions-claimRefund"
+                onClick={(e) => refundContribution(props.dispatch, props.web3, props.account, contribution.id, props.crowdfunder)}
+              >
+                X
+              </td>
+            </tr>
           )
-        }) }
-      </tbody>        
+        })}
+      </tbody>
     </table>
 
   )
@@ -92,48 +68,47 @@ const renderMyContributions = (contributions, popover) => {
           <th>Amount</th>
           <th>Time</th>
         </tr>
-      </thead> 
+      </thead>
       <tbody>
-        { contributions.map((contribution, key) => {
+        {contributions.map((contribution, key) => {
           return (
-            
-              <tr 
-                key= {key}
-                className="contributions-contribution"
-              >
+
+            <tr
+              key={key}
+              className="contributions-contribution"
+            >
               <OverlayTrigger
-                key= {key}
-                trigger = 'click'
+                key={key}
+                trigger='click'
                 rootClose
                 placement='left'
                 overlay={popover(contribution.project)}
               >
                 <td className={`contributions-project text-${contribution.project.projectTypeClass}`}>{contribution.project.name}</td>
               </OverlayTrigger>
-                <td>${contribution.formattedFundAmount}</td>
-                <td className="text-muted">{contribution.formattedTimestamp}</td>
-              </tr>
+              <td>${contribution.formattedFundAmount}</td>
+              <td className="text-muted">{contribution.formattedTimestamp}</td>
+            </tr>
 
           )
-        }) }
-      </tbody>        
+        })}
+      </tbody>
     </table>
 
   )
 }
 
 const showMyContributions = props => {
-  return(
+  return (
     <Tabs defaultActiveKey="pendingRefund" className="bg-dark text-white">
       <Tab eventKey="pendingRefund" title="Pending Refund" className="bg-dark">
-        { props.showRefundAllButton ? showRefundAllButton(props) : null }
-        { renderMyRefundableContributions(props)}
+        {renderMyRefundableContributions(props)}
       </Tab>
-      <Tab eventKey="held" title="Held" className= "">
-        { renderMyContributions(props.myHeldContributions, props.renderProjectPopover)}
+      <Tab eventKey="held" title="Held" className="">
+        {renderMyContributions(props.myHeldContributions, props.renderProjectPopover)}
       </Tab>
-      <Tab eventKey="released" title="Released" className= "">
-        { renderMyContributions(props.myReleasedContributions, props.renderProjectPopover)}
+      <Tab eventKey="released" title="Released" className="">
+        {renderMyContributions(props.myReleasedContributions, props.renderProjectPopover)}
       </Tab>
     </Tabs>
   )
@@ -141,14 +116,14 @@ const showMyContributions = props => {
 
 class MyContributions extends Component {
 
- render() {
+  render() {
     return (
       <div className="card bg-dark text-white">
         <div className="card-header">
           My Contributions
         </div>
         <div className="card-body">
-          { this.props.showMyContributions ? showMyContributions(this.props) : <Spinner />}
+          {this.props.showMyContributions ? showMyContributions(this.props) : <Spinner />}
         </div>
       </div>
     )

@@ -8,7 +8,7 @@ import {
   loadAccount,
   loadDai,
   loadCrowdfunder,
-  loadDaiBalance
+  loadBalances
 } from '../store/interactions'
 import { 
   contractsLoadedSelector,
@@ -23,8 +23,8 @@ class App extends Component {
     this.autoRefresh(this.props.dispatch)
   }
 
-  async autoRefresh(dispatch){
-    if(typeof window.ethereum !== 'undefined'){
+  async autoRefresh(dispatch) {
+    if (typeof window.ethereum !== 'undefined') {
       window.ethereum.autoRefreshOnNetworkChange = false; //prevent refresing while changing network
       this.loadBlockchainData(dispatch)
       /* Case 2 - User switch account */
@@ -37,7 +37,7 @@ class App extends Component {
         window.location.reload()
         this.loadBlockchainData(dispatch)
       });
-    }	else {
+    } else {
       window.alert('Non-Ethereum browser detected. You should consider trying MetaMask: https://metamask.io/download.html')
     }
   }
@@ -47,21 +47,22 @@ class App extends Component {
     const networkId = await web3.eth.net.getId()
     const account = await loadAccount(web3, dispatch)
     const dai = await loadDai(web3, dispatch)
-    if(!dai) {
+    if (!dai) {
       window.alert('Dai smart contract not detected on the current network. Please select another network with Metamask.')
     }
     const crowdfunder = await loadCrowdfunder(web3, networkId, dispatch)
-    if(!crowdfunder) {
+    if (!crowdfunder) {
       window.alert('Crowdfunder smart contract not detected on the current network. Please select ropsten network with Metamask.')
     }
-    await loadDaiBalance(dai, dispatch, account)
+    await loadBalances(web3, dispatch, dai, account)
+
   }
 
   render() {
     return (
       <div>
          < Navbar />
-        { this.props.contractsLoaded ? <Content /> : <div className="content"></div> }
+         {this.props.contractsLoaded ? <Content /> : <div className="content"></div>}
       </div>
     );
   }
