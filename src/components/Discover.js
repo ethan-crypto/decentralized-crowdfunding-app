@@ -40,8 +40,7 @@ class Discover extends Component {
       payWithEth,
       ethCostLoading,
       ethCost,
-      insufficientEthBalance,
-      contributionDisabled
+      insufficientBalance,
     } = this.props
     return (
       <Card bg="dark" className="text-white">
@@ -89,11 +88,11 @@ class Discover extends Component {
                             required />
                         </div>
                         <div className="col-sm-auto mx-sm-auto ps-sm-1 mb-sm-auto py-2">
-                          <OverlayTrigger show={contributionDisabled && targettedProject && !ethCostLoading} overlay={
-                            <Tooltip id="tooltip-disabled">Insufficient {insufficientEthBalance && payWithEth ? 'ETH' : 'DAI'} balance</Tooltip>
+                          <OverlayTrigger show={insufficientBalance && targettedProject && !ethCostLoading} overlay={
+                            <Tooltip id="tooltip-disabled">Insufficient {insufficientBalance && payWithEth ? 'ETH' : 'DAI'} balance</Tooltip>
                           }>
                             <span className="d-inline-block">
-                              <Button type="submit" className="btn btn-primary btn-block btn-sm" disabled={contributionDisabled && targettedProject}>
+                              <Button type="submit" className="btn btn-primary btn-block btn-sm" disabled={(insufficientBalance || ethCostLoading) && targettedProject}>
                                 Contribute
                               </Button>
                             </span>
@@ -121,25 +120,22 @@ function mapStateToProps(state) {
   const ethCost = ethCostSelector(state)
   const ethBalance = ethBalanceSelector(state)
   const daiBalance = daiBalanceSelector(state)
-  const insufficientEthBalance = ethBalance < ethCost
-  const insufficientDaiBalance = daiBalance < contribution.amount
   const payWithEth = payWithEthSelector(state)
-  const ethCostLoading = ethCostLoadingSelector(state)
+  const insufficientBalance = payWithEth ? ethBalance < ethCost : daiBalance < contribution.amount
   return {
     web3: web3Selector(state),
     crowdfunder: crowdfunderSelector(state),
     dai: daiSelector(state),
     account: accountSelector(state),
     discoverProjects: discoverProjectsSelector(state),
+    ethCostLoading: ethCostLoadingSelector(state),
     contribution,
     payWithEth,
     showOpenProjects: formattedProjectsLoaded && !contribution.loading,
-    ethCostLoading,
     ethCost,
     ethBalance,
     daiBalance,
-    insufficientEthBalance,
-    contributionDisabled: payWithEth ? insufficientEthBalance : insufficientDaiBalance || ethCostLoading 
+    insufficientBalance,
   }
 }
 
