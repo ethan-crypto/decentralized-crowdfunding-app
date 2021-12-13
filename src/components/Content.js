@@ -113,9 +113,9 @@ class Content extends Component {
     this.loadBlockchainData(this.props)
   }
   async loadBlockchainData(props) {
-    const { dispatch, crowdfunder, deploymentBlock, dai, account } = props
+    const { dispatch, crowdfunder, deploymentBlock, dai, account, web3 } = props
     await loadAllCrowdfunderData(crowdfunder, deploymentBlock, dispatch)
-    await subscribeToEvents(crowdfunder, dai, account, dispatch)
+    await subscribeToEvents(crowdfunder, dai, account, dispatch, web3)
   }
 
   render() {
