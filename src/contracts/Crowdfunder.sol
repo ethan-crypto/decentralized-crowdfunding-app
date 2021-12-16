@@ -238,8 +238,3 @@ contract Crowdfunder {
     }
 }
 
-// Place timeGoal and fundingGoal limits
-// timeGoal limit would depend on fundgoal
-// timeGoalLimit == fundGoal*C
-// timeGoalLimit would not depend on the fundGoal digit number
-// change _amount data type from uint256 to uint16

@@ -1,20 +1,20 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { Form, Card, OverlayTrigger, Tooltip, Button } from 'react-bootstrap'
+import { Form, Card, Button, OverlayTrigger, Tooltip } from 'react-bootstrap'
 import Spinner from './Spinner'
 import {
   crowdfunderSelector,
   daiSelector,
-  daiBalanceSelector,
   discoverProjectsSelector,
   accountSelector,
   contributionSelector,
   web3Selector,
   formattedProjectsLoadedSelector,
   payWithEthSelector,
-  ethBalanceSelector,
   ethCostLoadingSelector,
-  ethCostSelector
+  ethCostSelector,
+  ethBalanceSelector,
+  daiBalanceSelector
 } from '../store/selectors'
 import {
   contributeToProject,
@@ -40,7 +40,7 @@ class Discover extends Component {
       payWithEth,
       ethCostLoading,
       ethCost,
-      insufficientBalance,
+      insufficientBalance 
     } = this.props
     return (
       <Card bg="dark" className="text-white">
@@ -88,15 +88,17 @@ class Discover extends Component {
                             required />
                         </div>
                         <div className="col-sm-auto mx-sm-auto ps-sm-1 mb-sm-auto py-2">
-                          <OverlayTrigger show={insufficientBalance && targettedProject && !ethCostLoading} overlay={
-                            <Tooltip id="tooltip-disabled">Insufficient {insufficientBalance && payWithEth ? 'ETH' : 'DAI'} balance</Tooltip>
-                          }>
+                          <OverlayTrigger show = {insufficientBalance && !ethCostLoading && targettedProject} 
+                            overlay={
+                              <Tooltip id="tooltip-disabled">
+                                Insufficient { payWithEth ? "ETH" : "DAI" } balance
+                              </Tooltip>}>
                             <span className="d-inline-block">
-                              <Button type="submit" className="btn btn-primary btn-block btn-sm" disabled={(insufficientBalance || ethCostLoading) && targettedProject}>
-                                Contribute
-                              </Button>
+                            <Button type="submit" className="btn btn-primary btn-block btn-sm" disabled={(ethCostLoading || insufficientBalance) && targettedProject}>
+                              Contribute
+                            </Button>
                             </span>
-                          </OverlayTrigger>
+                          </OverlayTrigger>   
                         </div>
                       </form>
                       {payWithEth && ((ethCostLoading || ethCost > 0) && targettedProject)
@@ -117,25 +119,22 @@ class Discover extends Component {
 function mapStateToProps(state) {
   const contribution = contributionSelector(state)
   const formattedProjectsLoaded = formattedProjectsLoadedSelector(state)
-  const ethCost = ethCostSelector(state)
   const ethBalance = ethBalanceSelector(state)
   const daiBalance = daiBalanceSelector(state)
   const payWithEth = payWithEthSelector(state)
-  const insufficientBalance = payWithEth ? ethBalance < ethCost : daiBalance < contribution.amount
+  const ethCost = ethCostSelector(state)
   return {
     web3: web3Selector(state),
     crowdfunder: crowdfunderSelector(state),
     dai: daiSelector(state),
     account: accountSelector(state),
     discoverProjects: discoverProjectsSelector(state),
-    ethCostLoading: ethCostLoadingSelector(state),
     contribution,
     payWithEth,
     showOpenProjects: formattedProjectsLoaded && !contribution.loading,
+    ethCostLoading: ethCostLoadingSelector(state),
     ethCost,
-    ethBalance,
-    daiBalance,
-    insufficientBalance,
+    insufficientBalance: payWithEth ? ethCost > ethBalance : contribution.amount > daiBalance 
   }
 }
 
